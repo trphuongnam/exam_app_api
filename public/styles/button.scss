@@ -1,0 +1,11 @@
+.ant-btn {
+  font-family: $poppins;
+  &-primary {
+    background-color: $colorButtonText;
+    border-radius: 0;
+  }
+
+  &-link {
+    color: $colorButtonText;
+  }
+}

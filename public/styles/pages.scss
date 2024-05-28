@@ -1,0 +1,43 @@
+// Login page
+.login-wrap {
+  .ant-image {
+    display: flex;
+    justify-content: center;
+    .login-logo {
+      width: 50% !important;
+    }
+  }
+  .login-form {
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: $fontsize1;
+    font-family: $poppins;
+    .ant-form-item {
+      width: 60%;
+      &-label {
+        label {
+          font-size: $fontsize1;
+        }
+      }
+      .ant-checkbox-wrapper {
+        span {
+          font-size: $fontsize1;
+        }
+      }
+      .ant-input {
+        height: 42px;
+        border-radius: 0;
+        color: $colorButtonText
+      }
+      .ant-input-password {
+        border-radius: 0;
+        height: 42px;
+        .ant-input {
+          height: 35px;
+        }
+      }
+    }
+  }
+}
