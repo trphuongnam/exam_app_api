@@ -23,9 +23,24 @@ body {
       background-color: #FCC822 !important;
       border-color: #FCC822 !important;
     }
+    .ant-steps-item-description {
+      display: none;
+    }
   }
 
-  .question_content {
+  .ant-picker {
+    width: 100%;
+  }
+  
+  .ant-select {
+    width: 100%;
+  }
+
+  .ant-notification {
+    background-color: #FCC822;
+  }
+
+  .title_box {
     background-color: #FCC822 !important;
     border-color: #FCC822 !important;
     min-height: 100px;
@@ -42,6 +57,7 @@ body {
     background-color: #F2F2F2;
     color: #000;
     font-weight: bold;
+    text-wrap: wrap;
     &:hover {
       background-color: #FCC822 !important;
       color: #FFF;
@@ -65,6 +81,18 @@ body {
       left: 50%;
       transform: translate(-50%, -50%);
       font-weight: bold;
+    }
+  }
+
+  .answer-group {
+    display: flex;
+    margin-bottom: 24px;
+    .ant-form-item {
+      margin-bottom: 0;
+    }
+    &__input {
+      width: 80%;
+      margin-right: 10px
     }
   }
 }

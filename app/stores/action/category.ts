@@ -1,5 +1,5 @@
-import { SET_CATEGORY } from "../constant/categoryConst";
+import { FETCH_CATEGORY } from "../constant/categoryConst";
 
 export const getCategoryAction = (data: any) => {
-  return {type: SET_CATEGORY, payload: data};
+  return {type: FETCH_CATEGORY, payload: data};
 }

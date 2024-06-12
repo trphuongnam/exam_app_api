@@ -12,6 +12,7 @@ const ButtonCustom = ({
   className,
   btnKey,
   isDisabled,
+  isLoading,
   //Event
   evClick
 }: Readonly<{
@@ -22,6 +23,7 @@ const ButtonCustom = ({
   className?: string;
   btnKey?: Key;
   isDisabled?: boolean;
+  isLoading?: boolean;
   evClick?: any;
 }>) => {
   return (
@@ -33,6 +35,7 @@ const ButtonCustom = ({
       onClick={() => evClick()}
       disabled={isDisabled}
       key={btnKey}
+      loading={isLoading}
     >
       {text}
     </Button>
