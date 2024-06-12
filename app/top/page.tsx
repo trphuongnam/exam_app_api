@@ -19,6 +19,7 @@ const Top = () => {
   const isLogin = useSelector((state: any) => state.login.isLogin);
   const categories:category[] = useSelector((state: any) => state.category.categories);
   const [loading, setLoading] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
 
   useEffect(() => {
     if (!authenticationRouter(cookies) && isLogin) {
@@ -40,6 +41,7 @@ const Top = () => {
   }
 
   const startTest = (idTest: string) => {
+    setIsDisabled(true)
     router.push('/exam/'+idTest)
   }
 
@@ -50,6 +52,8 @@ const Top = () => {
         btnKey={idTest}
         icon={<CaretRightOutlined />}
         evClick={() => startTest(idTest)}
+        isLoading={isDisabled}
+        isDisabled={isDisabled}
       />
     )
   }
@@ -61,7 +65,8 @@ const Top = () => {
       <div
         id="scrollableDiv"
         style={{
-          height: 400,
+          height: 'auto',
+          maxHeight: 'calc(100vh - 100px)',
           overflow: 'auto',
           padding: '0 16px',
           border: '1px solid rgba(140, 140, 140, 0.35)',
@@ -72,7 +77,6 @@ const Top = () => {
           next={()=>{}}
           hasMore={categories.length < 8}
           loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
-          endMessage={<Divider plain>It is all, nothing more 🤐</Divider>}
           scrollableTarget="scrollableDiv"
         >
           <List

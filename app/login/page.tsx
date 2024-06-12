@@ -7,8 +7,9 @@ import { Image, Checkbox, Form, Input} from "antd";
 import type { FormProps } from 'antd';
 import ButtonCustom from "@/app/components/button"
 import { LoginData } from "@/app/common/interfaces/loginInterface";
-import axios from 'axios';
-import { loginAction } from "../stores/action/login";
+import { LOGIN } from '@/app/common/util/apiUrls/index';
+import { axiosRequest } from "@/app/connection";
+import { loginAction, tokenAction } from "../stores/action/login";
 
 const Login = () => {
   const router = useRouter();
@@ -17,18 +18,22 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
+  const [isDisabled, setIsDisabled] = useState(false);
   const inputEmailRef = useRef(null);
   const inputPasswordRef = useRef(null);
 
   const onFinish: FormProps<LoginData>['onFinish'] = (values) => {
     console.log('Success:', values);
+    setIsDisabled(false);
   };
   
   const onFinishFailed: FormProps<LoginData>['onFinishFailed'] = (errorInfo) => {
     console.log('Failed:', errorInfo);
+    setIsDisabled(false);
   };
 
   const handleSubmit = async () => {
+    setIsDisabled(true);
     const inputEmail = inputEmailRef.current ? inputEmailRef.current.input.value : '';
     const inputPassword = inputPasswordRef.current ? inputPasswordRef.current.input.value : '';
 
@@ -40,12 +45,16 @@ const Login = () => {
       'password': inputPassword,
       'remember': remember
     }
-    const result = await axios.post('api/login', JSON.stringify(data));
-    if (result.status == 200) {
-      document.cookie = `token=${result.data.data}`;
+    await axiosRequest.post(LOGIN, data).then(({data}) => {
       router.push('/top');
+      document.cookie = `token=${data.access_token}`;
       dispatch(loginAction(true));
-    }
+      dispatch(tokenAction(data.access_token));
+    }).catch(() => {
+      dispatch(loginAction(false));
+      return null;
+    })
+    setIsDisabled(false);
   }
 
   const LoginForm = () => {
@@ -102,9 +111,11 @@ const Login = () => {
             text={'Login'}
             className='mr-8'
             evClick={handleSubmit}
+            isLoading={isDisabled}
           />
           <ButtonCustom
             text={'Signup'}
+            isDisabled={isDisabled}
           />
         </Form.Item>
       </Form>

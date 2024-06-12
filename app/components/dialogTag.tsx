@@ -3,7 +3,7 @@ import { Button, ConfigProviderProps } from "antd";
 type SizeType = ConfigProviderProps['componentSize'];
 type ButtonType = 'primary' | 'dashed' | 'link' | 'text' | 'default' | undefined;
 
-const ButtonCustom = ({
+const DialogTag = ({
   icon,
   text,
   sizes,
@@ -37,4 +37,4 @@ const ButtonCustom = ({
   );
 }
 
-export default ButtonCustom;
+export default DialogTag;

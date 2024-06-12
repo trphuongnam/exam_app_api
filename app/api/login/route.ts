@@ -5,7 +5,7 @@ import generateToken from '@/app/libs/generateToken'
 export const POST = async (request: Request) => {
   try {
     const dataRequest = await request.json();
-    const query = `SELECT * FROM wp_users WHERE user_email = '${dataRequest.email}'`;
+    const query = `SELECT * FROM users WHERE email = '${dataRequest.email}'`;
     const results = await connectDatabase.query(query);
     await connectDatabase.end();
 

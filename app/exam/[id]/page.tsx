@@ -7,9 +7,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { axiosRequest } from "@/app/connection";
 import { Spin, Steps, Modal, Result } from "antd";
 import ButtonCustom from "../../components/button";
-import { getQuestionAction } from "@/app/stores/action/question";
+import { getQuestionAction, setStartTest } from "@/app/stores/action/question";
 import { SmileOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { answerSelect } from "@/app/common/interfaces/questionInterface";
+import { randomInt } from "crypto";
 
 const Exam = () => {
   const router = useRouter();
@@ -27,8 +28,8 @@ const Exam = () => {
   const [isModalStartOpen, setIsModalStartOpen] = useState(false);
   const [isModalAnswerSystemOpen, setIsModalAnswerSystemOpen] = useState(false);
   const [answerSelected, setAnswerSelected] = useState([] as answerSelect[]);
-  const [selecting, setSelecting] = useState('' as string);
-  const [timeTest, setTimeTest] = useState(5000);
+  const [selecting, setSelecting] = useState([] as string[]);
+  const [timeTest, setTimeTest] = useState(10000);
   const [isStart, setIsStart] = useState(false);
 
   useEffect(() => {
@@ -46,7 +47,7 @@ const Exam = () => {
     } else {
       if (isStart) {
         if (timeTest > 0) {
-          setTimeout(() => {setTimeTest(timeTest - 1)}, 1000)
+          timeOut
         } else {
           setIsModalEndTimeOpen(true)
         }
@@ -65,12 +66,49 @@ const Exam = () => {
     })
   }
 
-  const onSelectAnswer = (answerKey: string, questionId: number) => {
-    setSelecting(answerKey);
+  const onSelectAnswer = (answerKey: string, questionId: number, isMulti: string) => {
+    if (isMulti == 'true') {
+      handleSelectMultiAnswer(answerKey, questionId)
+    } else {
+      handleSelectSingleAnswer(answerKey, questionId)   
+    }
+  }
+
+  const handleSelectMultiAnswer = (answerKey: string, questionId: number) => {    
+    let answerIndex = getAnswerIndex(questionId);
+    if (answerIndex < 0) {
+      let keyAnswers: string[] = [];
+      keyAnswers.push(answerKey);
+      setSelecting(keyAnswers);
+      let objAnswerSelect: answerSelect = {
+        qId: questionId,
+        aKey: keyAnswers,
+        isCorrect: false,
+        isMulti: true
+      }
+      answerSelected.push(objAnswerSelect);
+    } else {
+      debugger
+      const isExitKey = answerSelected[answerIndex].aKey.find((item: string) => item == answerKey)
+      if (!isExitKey) {
+        answerSelected[answerIndex].aKey.push(answerKey);
+      } else {
+        const index = answerSelected[answerIndex].aKey.findIndex((item: string) => item == answerKey);
+        answerSelected[answerIndex].aKey = answerSelected[answerIndex].aKey.slice(index, 1);
+      }
+    }
+  
+  }
+
+  const handleSelectSingleAnswer = (answerKey: string, questionId: number) => {
+    let keyAnswers: string[] = [];
+    keyAnswers = [answerKey];
+    setSelecting(keyAnswers);
     let objAnswerSelect: answerSelect = {
       qId: questionId,
-      aKey: answerKey,
-      isCorrect: false
+      aKey: keyAnswers,
+      isCorrect: false,
+      isMulti: false
     }
 
     let answerCorrectKey = `${answerKey}_correct`;
@@ -100,9 +138,15 @@ const Exam = () => {
     if (answerIndex >= 0) {
       setSelecting(answerSelected[answerIndex].aKey);
     } else {
-      setSelecting('');
+      setSelecting([]);
     }
   }
+
+  const onClickChangeQuestion = (value: number) => {
+    setCurrentQuestion(value);
+  }
+
+  var timeOut = setTimeout(() => {if (timeTest > 0) setTimeTest(timeTest - 1)}, 1000)
 
   const handleOk = (type: string) => {
     switch (type) {
@@ -122,9 +166,12 @@ const Exam = () => {
       case 'start':
         setIsModalStartOpen(false);
         setIsStart(true)
-        setTimeout(() => {setTimeTest(timeTest - 1)}, 1000)
+        dispatch(setStartTest(true))
+        timeOut
         break;
-        
+      case 'answer':
+        setIsModalAnswerSystemOpen(false);
+        break;
     }
   }
 
@@ -133,6 +180,7 @@ const Exam = () => {
   }
 
   const handleFinishTest = () => {
+    clearTimeout(timeOut);
     calcPoint();
     setIsModalResultOpen(true);
   }
@@ -149,16 +197,17 @@ const Exam = () => {
   const showAnswers = () => {
     if (question[currentQuestion]) {
       return Object.keys(question[currentQuestion].answers).map((keyName, i) => {
-        return (
-          question[currentQuestion]?.answers[keyName] ? (
+        if (question[currentQuestion]?.answers[keyName]) {
+          return (
             <ButtonCustom
+              key={`question_${i}`}
               btnKey={`question_${i}`}
               text={`${i+1}. ${question[currentQuestion]?.answers[keyName]}`}
-              className={selecting == keyName ? "question_answer text-left mb-2.5 selected" : "question_answer text-left mb-2.5"}
-              evClick={() => onSelectAnswer(keyName, question[currentQuestion].id)}
+              className={selecting.includes(keyName) ? "question_answer text-left mb-2.5 selected" : "question_answer text-left mb-2.5"}
+              evClick={() => onSelectAnswer(keyName, question[currentQuestion].id, question[currentQuestion].multiple_correct_answers)}
             />
-          ) : <></>
-        )
+          )
+        }
       })
     } else {
       return <></>
@@ -171,6 +220,7 @@ const Exam = () => {
         size="default"
         current={currentQuestion}
         items={question}
+        onChange={onClickChangeQuestion}
       />
     )
   }
@@ -191,17 +241,21 @@ const Exam = () => {
     )
   }
 
+  const multiAnswer = (question: any) => {
+    return question.multiple_correct_answers == 'true' ? '(Multiple answer)' : '';
+  }
+
   const listAnswer = () => {
     return Object.keys(question).map((key, index) => {
       return (
         <div key={question[key].id}>
-          <p className="qt_name">{`Q${index + 1}: ${question[key].question}`}</p>
+          <p className="qt_name" key={question[key].id}>{`Q${index + 1}: ${question[key].question} ${multiAnswer(question[key])}`}</p>
           <div className="flex direction-row">
             <div>
               {Object.keys(question[key].answers).map((aKey, i) => {
                 if (question[key].answers[aKey]) {
                   return (
-                    <p key={i} className={question[key].correct_answers[`${aKey}_correct`] == 'true' ? "ml-10 selected" : "ml-10"}>{`${i + 1}) ${question[key].answers[aKey]}`}</p>
+                    <p key={i} className={question[key].correct_answers[`${aKey}_correct`] == 'true' ? "ml-10 bg-green-500" : "ml-10"}>{`${i + 1}) ${question[key].answers[aKey]}`}</p>
                   )
                 }
               })}
@@ -210,7 +264,14 @@ const Exam = () => {
               {Object.keys(question[key].answers).map((aKey, i) => {
                 if (question[key].answers[aKey]) {
                   return (
-                    <p key={i} className={answerSelected.find((answer: answerSelect) => answer.qId == question[key].id && `${answer.aKey}` == aKey) ? "ml-10 bg-green-500" : "ml-10"}>{`${i + 1}) ${question[key].answers[aKey]}`}</p>
+                    <p
+                      key={i}
+                      className={
+                        answerSelected.find((answer: answerSelect) => answer.qId == question[key].id && answer.aKey.includes(aKey)) ? "ml-10 selected" : "ml-10"
+                      }
+                    >
+                      {`${i + 1}) ${question[key].answers[aKey]}`}
+                    </p>
                   )
                 }
               })}
@@ -226,21 +287,15 @@ const Exam = () => {
       return (
         <div>
           <div
-            className="question_content"
+            className="title_box"
           >
-            <span className="text-3xl">{!loading ? `Q${currentQuestion + 1}: ${question[currentQuestion]?.question}` : ''}</span>
+            <span className="text-3xl">{!loading ? `Q${currentQuestion + 1}: ${question[currentQuestion]?.question} ${multiAnswer(question[currentQuestion])}` : ''}</span>
           </div>
           <div
-            key={'answer'}
-            className="flex flex-col"
+            key={'question_' + currentQuestion}
+            className={"flex flex-col " + 'question_' + currentQuestion}
           >
             {showAnswers()}
-          </div>
-          <div
-            key={'point'}
-            className="text-sm font-bold"
-          >
-            {!loading ? `POINT: ${point} / 20` : ''}
           </div>
         </div>
       )
@@ -275,7 +330,12 @@ const Exam = () => {
             subTitle={answerLink()}
           />
         </Modal>
-        <Modal open={isModalStartOpen} onOk={() => handleOk('start')} onCancel={() => handleCancel()}>
+        <Modal
+          open={isModalStartOpen}
+          onOk={() => handleOk('start')}
+          onCancel={() => handleCancel()}
+          maskClosable={false}
+        >
           <Result
             title="Start the test?"
           />

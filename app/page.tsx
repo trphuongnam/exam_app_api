@@ -1,10 +1,27 @@
 "use client"
 import styled from "styled-components";
+import { useRouter } from "next/navigation";
+import { useCookies } from "next-client-cookies";
+import { useSelector } from "react-redux";
 import { Image } from "antd";
 import ButtonCustom from "./components/button"
 import { CaretDownOutlined } from "@ant-design/icons";
+import { authenticationRouter } from "@/app/common/util/functions/authenticationRouter";
 
 const Home = () => {
+  const router = useRouter();
+  const cookies = useCookies();
+
+  const isLogin = useSelector((state: any) => state.login.isLogin);
+
+  const handleClick = () => {
+    if (!authenticationRouter(cookies) && isLogin) {
+      router.push('/login')
+    } else {
+      router.push('/top')
+    }
+  }
+
   return (
     <WrapContent>
       <ContentLeft>
@@ -13,6 +30,7 @@ const Home = () => {
         <ButtonsAction>
           <ButtonCustom
             text={'Start solving'}
+            evClick={handleClick}
           />
           <ButtonCustom
             icon={<CaretDownOutlined />}
