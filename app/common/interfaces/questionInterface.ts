@@ -13,9 +13,17 @@ export type question = {
   multiple: boolean
 }
 
+export type answers = {
+  name: string,
+  key?: string,
+  correct: number
+}
+
 export type postData = {
   name: string,
   description?: string,
   category_id: number,
-  multiple: boolean
+  multiple: boolean,
+  answers: answers[],
+  correct: string
 }

@@ -3,6 +3,7 @@ import { ADD_CATEGORY, GET_CATEGORY, GET_CATEGORY_SELECT } from "../util/apiUrls
 import { getTokenFromCookie } from '@/app/common/util/functions/getTokenFromCookie'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { FETCH_CATEGORY, FETCH_CATEGORY_SELECT } from '@/app/stores/constant/categoryConst'
+import { openNotification } from "../util/notification";
 
 type PostData = {
   name: string;
@@ -59,8 +60,8 @@ export const addCategory = async (postData: PostData) => {
       }
     }
   ).then(({data}) => {
-    return data;
+    openNotification('Create Category', data.data.message, 200);
   }).catch(() => {
-    return {};
+    openNotification('Create Category', 'Create category fail', 500);
   })
 }

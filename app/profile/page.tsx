@@ -7,12 +7,12 @@ import { useSelector, useDispatch } from "react-redux";
 import { ThunkDispatch } from "@reduxjs/toolkit";
 import { getUserService } from "../common/services/userService";
 import { Tabs, Spin, Upload } from 'antd';
-import type { UploadProps } from 'antd';
 import { UserOutlined, LineChartOutlined, UploadOutlined } from '@ant-design/icons';
 import ButtonCustom from "../components/button";
 import CategoryForm from "./categoryForm";
 import QuestionForm from "./questionForm";
-
+import { importQuestion } from "../common/services/questionService";
+import { openNotification } from "../common/util/notification";
 
 const Top = () => {
   const router = useRouter();
@@ -23,6 +23,7 @@ const Top = () => {
   const loading = useSelector((state: any) => state.user.isLoading);
   const [categoryDialogVisible, setCategoryDialogVisible] = useState(false);
   const [questionDialogVisible, setQuestionDialogVisible] = useState(false);
+  const [fileUpload, setFileUpload] = useState([] as any);
   
   const tabs = [
     'Info',
@@ -77,12 +78,28 @@ const Top = () => {
           className="mr-3"
           evClick={() => {setQuestionDialogVisible(true)}}
         />
-        {/* <Upload {...props}>
+        <Upload
+          accept=".xlsx"
+          maxCount={1}
+          onChange={onImportQuestion}
+          listType="picture"
+          className="upload-list-inline"
+          defaultFileList={[...fileUpload]}
+          onRemove={removeFile}
+        >
           <ButtonCustom
             text="Import Question"
             icon={<UploadOutlined/>}
+            evClick={() => {}}
+            className="mr-3"
           />
-        </Upload> */}
+        </Upload>
+        <ButtonCustom
+          text="Push"
+          icon={<UploadOutlined/>}
+          evClick={() => {startImportQuestion()}}
+          className={fileUpload.length == 0 ? 'hidden' : 'block mt-3'}
+        />
       </>
     )
   }
@@ -107,21 +124,32 @@ const Top = () => {
     )
   }
 
-  const props: UploadProps = {
-    name: 'file',
-    action: 'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
-    headers: {
-      authorization: 'authorization-text',
-    },
-    onChange(info) {
-      if (info.file.status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
-    },
-  };
+  const onImportQuestion = (fileInfo: any) => {
+    const fileName = fileInfo.file.name;
+    let extention = fileName.split('.')[1];
+    if (extention != 'xlsx') {
+      openNotification('Import', 'File extention invalid', 500);
+      return;
+    }
+    const fileData = {
+      uid: 'question_xlsx',
+      name: fileName,
+      status: 'done',
+      file: fileInfo.file.originFileObj,
+    }
+    setFileUpload([fileData]);
+  }
 
-  const onImportCSV = () => {
-    console.log('import question csv')
+  const startImportQuestion = () => {
+    let formData = new FormData();
+    console.log(fileUpload, 'fileupload')
+    formData.append("file", fileUpload[0].file);
+    importQuestion(formData);
+    setFileUpload([]);
+  }
+
+  const removeFile = () => {
+    setFileUpload([]);
   }
 
   const onCancel = (type: string) => {

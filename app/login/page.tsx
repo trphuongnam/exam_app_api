@@ -10,6 +10,7 @@ import { LoginData } from "@/app/common/interfaces/loginInterface";
 import { LOGIN } from '@/app/common/util/apiUrls/index';
 import { axiosRequest } from "@/app/connection";
 import { loginAction, tokenAction } from "../stores/action/login";
+import { openNotification } from "../common/util/notification";
 
 const Login = () => {
   const router = useRouter();
@@ -23,12 +24,10 @@ const Login = () => {
   const inputPasswordRef = useRef(null);
 
   const onFinish: FormProps<LoginData>['onFinish'] = (values) => {
-    console.log('Success:', values);
     setIsDisabled(false);
   };
   
   const onFinishFailed: FormProps<LoginData>['onFinishFailed'] = (errorInfo) => {
-    console.log('Failed:', errorInfo);
     setIsDisabled(false);
   };
 
@@ -47,11 +46,13 @@ const Login = () => {
     }
     await axiosRequest.post(LOGIN, data).then(({data}) => {
       router.push('/top');
-      document.cookie = `token=${data.access_token}`;
+      document.cookie = `token=${data.data.access_token}`;
       dispatch(loginAction(true));
-      dispatch(tokenAction(data.access_token));
+      dispatch(tokenAction(data.data.access_token));
+      openNotification(data.data.message, '', data.data.status);
     }).catch(() => {
       dispatch(loginAction(false));
+      openNotification('Error', `Can't handle your action. Please try again!!`, 500);
       return null;
     })
     setIsDisabled(false);

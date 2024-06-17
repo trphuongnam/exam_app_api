@@ -1,5 +1,5 @@
-import { Modal, Button, Select, Form, Input } from "antd";
-import type { FormProps } from 'antd';
+import { Modal, Button, Select, Form, Input, Checkbox } from "antd";
+import type { FormProps, CheckboxProps } from 'antd';
 import { useEffect, useState } from "react";
 import { ThunkDispatch } from "@reduxjs/toolkit";
 import { useSelector, useDispatch } from "react-redux";
@@ -12,6 +12,11 @@ type FieldType = {
   description?: string;
   categoryId: number;
   multiple: boolean;
+  answer_a: string;
+  answer_b: string;
+  answer_c: string;
+  answer_d: string;
+  correct: string;
 };
 
 const QuestionForm = ({
@@ -32,6 +37,7 @@ const QuestionForm = ({
   const dispatch = useDispatch<ThunkDispatch<any, any, any>>();
   const [selected, setSelected] = useState('');
   const [isDisable, setIsDisable] = useState(true);
+  const [answerCorrect, setAnswerCorrect] = useState([] as string[]);
   const categories = useSelector((state: any) => state.category.categorySelect);
   const types = [
     { value: false, label: 'Single' },
@@ -47,14 +53,42 @@ const QuestionForm = ({
   useEffect(() => {
     selected ? setIsDisable(false) : setIsDisable(true);
   }, [selected])
+
+  const answerItem = (label: string, name: any) => {
+    return (
+      <div className="answer-group">
+        <Form.Item<FieldType>
+          label={label}
+          name={name}
+          className="answer-group__input"
+        >
+          <Input disabled={isDisable}/>
+        </Form.Item>
+        <Checkbox.Group className={`${name}`}>
+          <Checkbox value={name} onChange={onChange}></Checkbox>
+        </Checkbox.Group>
+      </div>
+    )
+  }
   
   const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
+    const listAnswer = [
+      {key: 'answer_a', name: values.answer_a, correct: answerCorrect.includes('answer_a') ? 1 : 0},
+      {key: 'answer_b', name: values.answer_b, correct: answerCorrect.includes('answer_b') ? 1 : 0},
+      {key: 'answer_c', name: values.answer_c, correct: answerCorrect.includes('answer_c') ? 1 : 0},
+      {key: 'answer_d', name: values.answer_d, correct: answerCorrect.includes('answer_d') ? 1 : 0},
+    ];
+
     let dataPost: postData = {
       name: values.name,
       description: values.description,
       category_id: values.categoryId,
-      multiple: values.multiple
+      multiple: values.multiple,
+      answers: listAnswer,
+      correct: JSON.stringify(answerCorrect)
     };
+
+    console.log(dataPost,'value');
   
     addQuestion(dataPost);
     onCloseForm();
@@ -72,6 +106,24 @@ const QuestionForm = ({
 
   const handleChange = (value: string) => {
     setSelected(value);
+  }
+
+  const onChange: CheckboxProps['onChange'] = (e) => {
+    let correct = answerCorrect;
+    if (e.target.checked) {
+      if (correct.length > 0) {
+        const exist = correct.find((item) => item == e.target.value);
+        if (!exist) {
+          correct.push(e.target.value);
+        }
+      } else {
+        correct.push(e.target.value);
+      }
+    } else {
+      correct = correct.filter((item) => item !== e.target.value);
+    }
+
+    setAnswerCorrect(correct);
   }
 
   return (
@@ -135,10 +187,15 @@ const QuestionForm = ({
               allowClear
             />
           </Form.Item>
+          
+          {answerItem('Answer A', 'answer_a')}
+          {answerItem('Answer B', 'answer_b')}
+          {answerItem('Answer C', 'answer_c')}
+          {answerItem('Answer D', 'answer_d')}
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
-              Save
+              Create
             </Button>
           </Form.Item>
         </Form>

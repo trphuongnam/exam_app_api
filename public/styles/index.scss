@@ -36,6 +36,10 @@ body {
     width: 100%;
   }
 
+  .ant-notification {
+    background-color: #FCC822;
+  }
+
   .title_box {
     background-color: #FCC822 !important;
     border-color: #FCC822 !important;
@@ -77,6 +81,18 @@ body {
       left: 50%;
       transform: translate(-50%, -50%);
       font-weight: bold;
+    }
+  }
+
+  .answer-group {
+    display: flex;
+    margin-bottom: 24px;
+    .ant-form-item {
+      margin-bottom: 0;
+    }
+    &__input {
+      width: 80%;
+      margin-right: 10px
     }
   }
 }

@@ -12,3 +12,4 @@ export const GET_CATEGORY_SELECT = '/category/select'
 
 // Question
 export const ADD_QUESTION = '/question'
+export const IMPORT_QUESTION = '/question/import'
