@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Menu } from "antd";
+import { Menu, Avatar, Modal } from "antd";
+import { UserOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { menus, loginMenu, logoutMenu } from '@/app/common/util/menu';
 import { useCookies } from "next-client-cookies";
@@ -15,20 +16,41 @@ const MenuLayout = () => {
   const dispatch = useDispatch();
   const [current, setCurrent] = useState('mail');
   const isLogin = useSelector((state: any) => state.login.isLogin)
+  const isTestStarted = useSelector((state: any) => state.question.isStartTest)
+  const [modalConfirmDisabled, setModalConfirmDisabled] = useState(false);
+  const [eventMenu, setEventMenu] = useState({} as any);
 
   const onClick: MenuProps['onClick'] = (e) => {
+    setEventMenu(e);
+    if (isTestStarted) {
+      setModalConfirmDisabled(true);
+    } else {
+      handleAction(e);
+    }
+  };
+
+  const handleAction = (e: any) => {
     if (e.key !== 'logout') {
       router.push(e.key);
       setCurrent(e.key);
     } else {
       handleLogout();
     }
-  };
+    setModalConfirmDisabled(false);
+  }
 
   const handleLogout = () => {
     cookies.remove('token');
     dispatch(loginAction(false));
     router.push('/login');
+  }
+
+  const onClickProfile = () => {
+    if (isTestStarted) {
+      setModalConfirmDisabled(true);
+    } else {
+      router.push('/profile')
+    }
   }
 
   const ListMenu = () => {
@@ -38,7 +60,10 @@ const MenuLayout = () => {
         menuItem = menuItem.concat(logoutMenu);
       }
       return (
-        <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={menuItem} />
+        <div className="flex items-center justify-end">
+          <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={menuItem} />
+          <Avatar style={{ backgroundColor: '#87d068' }} icon={<UserOutlined />} className="cursor-pointer" onClick={onClickProfile}/>
+        </div>
       );
     } else {
       if (loginMenu && menuItem) {
@@ -53,6 +78,15 @@ const MenuLayout = () => {
   return (
     <>
       {ListMenu()}
+
+      <Modal
+        open={modalConfirmDisabled}
+        onOk={() => handleAction(eventMenu)}
+        onCancel={() => setModalConfirmDisabled(false)}
+        maskClosable={false}
+      >
+        You want to exit the test
+      </Modal>
     </>
   )
 

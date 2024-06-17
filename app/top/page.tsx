@@ -4,8 +4,8 @@ import { useCookies } from "next-client-cookies";
 import { authenticationRouter } from "@/app/common/util/functions/authenticationRouter";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { getCategoryAction } from "../stores/action/category";
-import { axiosRequest } from "@/app/connection";
+import { ThunkDispatch } from "@reduxjs/toolkit";
+import { getCategoryService } from "../common/services/categoryService";
 import { category } from "@/app/common/interfaces/categoryInterface";
 import { Spin, Avatar, Divider, List, Skeleton } from "antd";
 import ButtonCustom from "../components/button";
@@ -15,10 +15,11 @@ import { CaretRightOutlined } from "@ant-design/icons";
 const Top = () => {
   const router = useRouter();
   const cookies = useCookies();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch() as ThunkDispatch<any, any, any>;
   const isLogin = useSelector((state: any) => state.login.isLogin);
   const categories:category[] = useSelector((state: any) => state.category.categories);
   const [loading, setLoading] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
 
   useEffect(() => {
     if (!authenticationRouter(cookies) && isLogin) {
@@ -28,18 +29,14 @@ const Top = () => {
     }
   }, [])
 
-  const getCategories = async () => {
+  const getCategories = () => {
     setLoading(true);
-    await axiosRequest.get('/categories').then((result) => {
-      dispatch(getCategoryAction(Object.values(result.data)));
-      setLoading(false);
-    }).catch(() => {
-      setLoading(false);
-      return null;
-    })
+    dispatch(getCategoryService());
+    setLoading(false);
   }
 
   const startTest = (idTest: string) => {
+    setIsDisabled(true)
     router.push('/exam/'+idTest)
   }
 
@@ -50,6 +47,8 @@ const Top = () => {
         btnKey={idTest}
         icon={<CaretRightOutlined />}
         evClick={() => startTest(idTest)}
+        isLoading={isDisabled}
+        isDisabled={isDisabled}
       />
     )
   }
@@ -61,7 +60,8 @@ const Top = () => {
       <div
         id="scrollableDiv"
         style={{
-          height: 400,
+          height: 'auto',
+          maxHeight: 'calc(100vh - 100px)',
           overflow: 'auto',
           padding: '0 16px',
           border: '1px solid rgba(140, 140, 140, 0.35)',
@@ -70,9 +70,8 @@ const Top = () => {
         <InfiniteScroll
           dataLength={categories.length}
           next={()=>{}}
-          hasMore={categories.length < 8}
+          hasMore={categories.length < 7}
           loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
-          endMessage={<Divider plain>It is all, nothing more 🤐</Divider>}
           scrollableTarget="scrollableDiv"
         >
           <List
