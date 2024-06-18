@@ -22,7 +22,7 @@ class Category extends Model
     ];
 
     public function question() {
-        $this->hasMany(Question::class, 'category_id ');
+        $this->hasMany(Question::class, 'category_id');
     }
 
     public function result() {
