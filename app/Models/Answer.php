@@ -19,9 +19,10 @@ class Answer extends Model
     protected $fillable = [
         'name',
         'key',
-        'correct_answer',
+        'correct',
         'question_id',
-        'created_at'
+        'created_at',
+        'updated_at'
     ];
 
     public function selections() {

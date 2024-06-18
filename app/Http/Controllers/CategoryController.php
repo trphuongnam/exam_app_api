@@ -4,29 +4,27 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Category;
+use App\Traits\ResponseTrait;
 
 class CategoryController extends Controller
 {
+    use ResponseTrait;
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $categories = Category::get();
-            return response()->json([
-                'success' => true,
-                'data' => $categories
-            ], 200);
+            $current_page = $request->page;
+            $per_page = $request->row;
+            $categories = Category::paginate($per_page);
+            $total_page = ceil($categories->total() / $per_page);
+            return $this->respondSuccessPaginate($categories, $current_page, $total_page, $categories->perPage(), $categories->total());
         } catch (\Throwable $th) {
             //throw $th;
-            return response()->json([
-                'success' => false,
-                'error' => 'Internal Server Error',
-                'status' => '500'
-            ], 500);
+            return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
         }
     }
 
@@ -60,17 +58,10 @@ class CategoryController extends Controller
             $category->start_time = $start_time;
             $category->end_time = $end_time;
             $category->save();
-            return response()->json([
-                'success' => true,
-                'message' => 'save_success'
-            ], 200);
+            return $this->respondSuccess(['message' => 'Save category success']);
         } catch (\Throwable $th) {
-            //throw $th;
-            return response()->json([
-                'success' => false,
-                'error' => 'Internal Server Error',
-                'status' => '500'
-            ], 500);
+            // throw $th;
+            return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
         }
     }
 
@@ -127,17 +118,11 @@ class CategoryController extends Controller
     public function getCategory()
     {
         try {
-            $categories = Category::select('id', 'name')->get()->toArray();            
-            return response()->json([
-                'success' => true,
-                'data' => $categories
-            ], 200);
+            $categories = Category::select('id', 'name')->get()->toArray();
+            return $this->respondSuccess($categories);
         } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'error' => 'get_fail',
-                'status' => '403'
-            ], 403);
+            // throw $th;
+            return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
         }
     }
 }

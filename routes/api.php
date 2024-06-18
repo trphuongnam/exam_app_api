@@ -34,6 +34,7 @@ Route::group(['middleware' => 'apiAuth'], function ($router) {
     // Question route
     Route::group(['prefix' => 'question'], function ($router) {
         Route::post('/', 'App\Http\Controllers\QuestionController@store');
+        Route::post('/import', 'App\Http\Controllers\QuestionController@importExcel');
     });
 });
 
