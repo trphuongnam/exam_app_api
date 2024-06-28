@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { ThunkDispatch } from "@reduxjs/toolkit";
 import { getCategoryService } from "../common/services/categoryService";
 import { category } from "@/app/common/interfaces/categoryInterface";
-import { Spin, Avatar, Divider, List, Skeleton } from "antd";
+import { Spin, Avatar, List, Skeleton } from "antd";
 import ButtonCustom from "../components/button";
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { CaretRightOutlined } from "@ant-design/icons";
@@ -18,7 +18,8 @@ const Top = () => {
   const dispatch = useDispatch() as ThunkDispatch<any, any, any>;
   const isLogin = useSelector((state: any) => state.login.isLogin);
   const categories:category[] = useSelector((state: any) => state.category.categories);
-  const [loading, setLoading] = useState(false);
+  const paginate = useSelector((state: any) => state.category.paginate);
+  const loading = useSelector((state: any) => state.category.isLoading);
   const [isDisabled, setIsDisabled] = useState(false);
 
   useEffect(() => {
@@ -29,15 +30,20 @@ const Top = () => {
     }
   }, [])
 
-  const getCategories = () => {
-    setLoading(true);
-    dispatch(getCategoryService());
-    setLoading(false);
+  const getCategories = (page: number = 1) => {
+    dispatch(getCategoryService({page: page, numRow: 10}));
   }
 
   const startTest = (idTest: string) => {
     setIsDisabled(true)
     router.push('/exam/'+idTest)
+  }
+
+  const handleLoadMore = () => {
+    if (paginate.currentPage < paginate.totalPage) {
+      const page = parseInt(paginate.currentPage) + 1;
+      getCategories(page);
+    }
   }
 
   const testButton = (idTest: string) => {
@@ -56,26 +62,25 @@ const Top = () => {
   return (
     <>
       <h1 className="text-xl text-center p-2">Choose the category</h1>
-      <Spin spinning={loading} fullscreen />
       <div
         id="scrollableDiv"
         style={{
-          height: 'auto',
-          maxHeight: 'calc(100vh - 100px)',
+          height: 'calc(100vh - 200px)',
+          maxHeight: 'calc(100vh - 200px)',
           overflow: 'auto',
           padding: '0 16px',
-          border: '1px solid rgba(140, 140, 140, 0.35)',
         }}
       >
         <InfiniteScroll
           dataLength={categories.length}
-          next={()=>{}}
-          hasMore={categories.length < 7}
+          next={()=>{handleLoadMore()}}
+          hasMore={categories.length < paginate.total}
           loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
           scrollableTarget="scrollableDiv"
         >
           <List
             dataSource={categories}
+            loading={loading}
             renderItem={(item) => (
               <List.Item>
                 <List.Item.Meta
@@ -83,7 +88,7 @@ const Top = () => {
                   title={item.name}
                   description={item.name}
                 />
-                <div>{testButton(item.name)}</div>
+                <div>{testButton(item.id)}</div>
               </List.Item>
             )}
           />

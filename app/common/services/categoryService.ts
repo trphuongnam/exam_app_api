@@ -12,18 +12,34 @@ type PostData = {
   end_time?: string;
 }
 
+type queryParams = {
+  page: number,
+  numRow: number
+}
+
 export const getCategoryService = createAsyncThunk(
   FETCH_CATEGORY,
-  async () => {
+  async (params: queryParams) => {
+    const {page, numRow} = {...params};
     const response = await axiosRequest.get(
       GET_CATEGORY,
       {
         headers: {
           Authorization: getTokenFromCookie()
+        },
+        params: {
+          page: page,
+          row: numRow
         }
       }
     )
-    return response.data.data
+    return {
+      data: response.data.data.data,
+      total: response.data.total,
+      totalPage: response.data.total_page,
+      currentPage: response.data.page_current,
+      pageSize: response.data.page_size,
+    }
   },
 )
 

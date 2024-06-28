@@ -1,20 +1,39 @@
-import { SET_QUESTION, SET_START_TEST } from "../constant/questionConst";
+import { getQuestionCategoryService } from "@/app/common/services/questionService";
+import { createSlice } from "@reduxjs/toolkit";
+import { questionApi } from "@/app/common/interfaces/questionInterface";
 
-const initialState = {
+type initState = {
+  questions: questionApi[],
+  isStartTest: boolean,
+  loading: boolean
+}
+
+const initialState: initState = {
   questions: [],
-  isStartTest: false
+  isStartTest: false,
+  loading: false
 }
 
-const categoryReducer = (state = initialState, action: any) => {
-  switch (action.type) {
-    case SET_QUESTION:
-      return {...state, questions: action.payload};
-    case SET_START_TEST:
-      return {...state, isStartTest: action.payload};
-    default:
-      return state
+export const questionSlice = createSlice({
+  name: 'category',
+  initialState,
+  reducers: {
+    setStartTest(state, action) {
+      state = action.payload
+    }
+  },
+  extraReducers: (builder) => {
+   // --- Xử lý trong reducer với case pending / fulfilled / rejected ---
+    builder
+      .addCase(getQuestionCategoryService.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getQuestionCategoryService.fulfilled, (state, action) => {
+        state.loading = false;
+        state.questions = action.payload.data;
+      });
   }
-  
-}
+});
 
-export default categoryReducer;
+export const { setStartTest } = questionSlice.actions
+export default questionSlice.reducer;

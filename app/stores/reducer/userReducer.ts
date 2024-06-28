@@ -18,7 +18,6 @@ export const userSlice = createSlice({
       })
       .addCase(getUserService.fulfilled, (state, action) => {
         state.isLoading = false;
-        console.log(action.payload, 'action payload')
         state.userData = action.payload;
       });
   }

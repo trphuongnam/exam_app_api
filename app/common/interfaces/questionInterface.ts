@@ -1,7 +1,6 @@
 export type answerSelect = {
   qId: number,
-  aKey: string[],
-  isCorrect: boolean,
+  answerId: number[],
   isMulti: boolean
 }
 
@@ -11,6 +10,17 @@ export type question = {
   description?: string,
   categoryId: number,
   multiple: boolean
+}
+
+export type questionApi = {
+  id: string,
+  name: string,
+  description: string,
+  category_id: number,
+  multiple: number,
+  created_at: string,
+  updated_at: string,
+  answer: any[]
 }
 
 export type answers = {

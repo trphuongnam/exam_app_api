@@ -88,8 +88,6 @@ const QuestionForm = ({
       correct: JSON.stringify(answerCorrect)
     };
 
-    console.log(dataPost,'value');
-  
     addQuestion(dataPost);
     onCloseForm();
   };

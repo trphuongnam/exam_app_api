@@ -3,6 +3,12 @@ import { getCategoryService, getCategorySelectService } from "@/app/common/servi
 
 const initialState = {
   categories: [],
+  paginate: {
+    total: 0,
+    totalPage: 0,
+    currentPage: 1,
+    pageSize: 10
+  },
   categorySelect: [] as any,
   isLoading: false
 }
@@ -19,7 +25,13 @@ export const categorySlice = createSlice({
       })
       .addCase(getCategoryService.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.categories = action.payload;
+        state.categories = state.categories.concat(action.payload.data)
+        state.paginate = {
+          total: action.payload.total,
+          totalPage: action.payload.totalPage,
+          currentPage: action.payload.currentPage,
+          pageSize: action.payload.pageSize
+        }
       })
       .addCase(getCategorySelectService.pending, (state) => {
         state.isLoading = true;
