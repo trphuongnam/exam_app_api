@@ -11,6 +11,19 @@ class Results extends Model
 {
     use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'user_id',
+        'category_id',
+        'score',
+        'created_at',
+        'updated_at',
+    ];
+
     public function user() {
         $this->belongsTo(User::class, 'user_id');
     }

@@ -30,6 +30,6 @@ class Answer extends Model
     }
 
     public function question() {
-        $this->hasMany(Question::class, 'question_id');
+        $this->belongsTo(Question::class, 'question_id');
     }
 }

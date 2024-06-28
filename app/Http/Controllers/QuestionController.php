@@ -23,16 +23,6 @@ class QuestionController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -74,20 +64,9 @@ class QuestionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($category)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+        print($category);
     }
 
     /**
@@ -126,7 +105,6 @@ class QuestionController extends Controller
             $excel = Importer::make('Excel');
             $excel->load($request->file);
             $collection = $excel->getCollection();
-            // print_r($collection);
 
             foreach ($collection as $key => $row) {
                 if ($key > 0) {
@@ -190,5 +168,15 @@ class QuestionController extends Controller
             throw $th;
             return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
         }
+    }
+
+    public function getQuestionByCategory($catId) {
+        $questions = Question::with(['answer' => function ($query) {
+                        $query->select('id', 'name', 'question_id');
+                    }])
+                    ->where('category_id', $catId)
+                    ->limit(20)
+                    ->get();
+        return $this->respondSuccess($questions);
     }
 }
