@@ -1,7 +1,12 @@
 import { SET_LOGIN, FETCH_USER, SET_TOKEN } from "../constant/loginConst";
 // import { getUserData } from "@/app/common/services/userService";
 
-const initialState = {
+type initState = {
+  isLogin: boolean,
+  token: string
+}
+
+const initialState: initState = {
   isLogin: false,
   token: '',
 }

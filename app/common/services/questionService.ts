@@ -1,8 +1,10 @@
 import { axiosRequest } from "@/app/connection";
-import { ADD_QUESTION, IMPORT_QUESTION } from "@/app/common/util/apiUrls/index";
+import { ADD_QUESTION, IMPORT_QUESTION, GET_QUESTION_CATEGORY } from "@/app/common/util/apiUrls/index";
 import { getTokenFromCookie } from "../util/functions/getTokenFromCookie";
 import { postData } from "../interfaces/questionInterface";
 import { openNotification } from "../util/notification";
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { GET_QUESTION_BY_CATEGORY } from "@/app/stores/constant/questionConst";
 
 export const addQuestion = async (postData: postData) => {
   await axiosRequest.post(
@@ -36,3 +38,20 @@ export const importQuestion = async (csvFile: FormData) => {
     openNotification('Import Question', 'Import question fail', 500);
   })
 }
+
+export const getQuestionCategoryService = createAsyncThunk(
+  GET_QUESTION_BY_CATEGORY,
+  async (categoryId: string) => {
+    const response = await axiosRequest.get(
+      GET_QUESTION_CATEGORY.replace(':catId', categoryId),
+      {
+        headers: {
+          Authorization: getTokenFromCookie()
+        }
+      }
+    )
+    return {
+      data: response.data.data,
+    }
+  },
+)

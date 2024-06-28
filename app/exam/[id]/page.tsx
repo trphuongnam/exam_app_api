@@ -4,22 +4,25 @@ import { useCookies } from "next-client-cookies";
 import { authenticationRouter } from "@/app/common/util/functions/authenticationRouter";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { axiosRequest } from "@/app/connection";
 import { Spin, Steps, Modal, Result } from "antd";
 import ButtonCustom from "../../components/button";
-import { getQuestionAction, setStartTest } from "@/app/stores/action/question";
+import { setStartTest } from "@/app/stores/action/question";
 import { SmileOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { answerSelect } from "@/app/common/interfaces/questionInterface";
-import { randomInt } from "crypto";
+import { getQuestionCategoryService } from "@/app/common/services/questionService";
+import { ThunkDispatch } from "@reduxjs/toolkit";
+import { finishTestService } from "@/app/common/services/testService"
+import { testFinish } from "@/app/common/interfaces/testInterface";
 
 const Exam = () => {
   const router = useRouter();
   const cookies = useCookies();
   const dispatch = useDispatch();
+  const dispatchThunk = useDispatch() as ThunkDispatch<any, any, any>;
   const params = useParams();
   const isLogin = useSelector((state: any) => state.login.isLogin);
   const question:any = useSelector((state: any) => state.question.questions);
-  const [loading, setLoading] = useState(false);
+  const loading: boolean = useSelector((state: any) => state.question.loading);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [point, setPoint] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,7 +31,7 @@ const Exam = () => {
   const [isModalStartOpen, setIsModalStartOpen] = useState(false);
   const [isModalAnswerSystemOpen, setIsModalAnswerSystemOpen] = useState(false);
   const [answerSelected, setAnswerSelected] = useState([] as answerSelect[]);
-  const [selecting, setSelecting] = useState([] as string[]);
+  const [selecting, setSelecting] = useState([] as number[]);
   const [timeTest, setTimeTest] = useState(10000);
   const [isStart, setIsStart] = useState(false);
 
@@ -36,7 +39,7 @@ const Exam = () => {
     if (!authenticationRouter(cookies) && isLogin) {
       router.push('/login');
     } else {
-      getQuestionByCategory(params.id)
+      getQuestionByCategory(String(params.id))
       setIsModalStartOpen(true)
     }
   }, [])
@@ -55,68 +58,52 @@ const Exam = () => {
     }
   }, [timeTest, isStart])
 
-  const getQuestionByCategory = async (ctgName: any) => {
-    setLoading(true);
-    await axiosRequest.get('/questions?category='+ctgName).then((result) => {
-      dispatch(getQuestionAction(Object.values(result.data)));
-      setLoading(false);
-    }).catch(() => {
-      setLoading(false);
-      return null;
-    })
+  const getQuestionByCategory = (ctgId: string) => {
+    dispatchThunk(getQuestionCategoryService(ctgId))
   }
 
-  const onSelectAnswer = (answerKey: string, questionId: number, isMulti: string) => {
-    if (isMulti == 'true') {
-      handleSelectMultiAnswer(answerKey, questionId)
+  const onSelectAnswer = (answerId: number, questionId: number, isMulti: number) => {
+    if (isMulti == 2) {
+      handleSelectMultiAnswer(answerId, questionId)
     } else {
-      handleSelectSingleAnswer(answerKey, questionId)   
+      handleSelectSingleAnswer(answerId, questionId)   
     }
   }
 
-  const handleSelectMultiAnswer = (answerKey: string, questionId: number) => {    
+  const handleSelectMultiAnswer = (answerId: number, questionId: number) => {    
     let answerIndex = getAnswerIndex(questionId);
     if (answerIndex < 0) {
-      let keyAnswers: string[] = [];
-      keyAnswers.push(answerKey);
-      setSelecting(keyAnswers);
+      let idAnswers: number[] = [];
+      idAnswers.push(answerId);
+      setSelecting(idAnswers);
       let objAnswerSelect: answerSelect = {
         qId: questionId,
-        aKey: keyAnswers,
-        isCorrect: false,
+        answerId: idAnswers,
         isMulti: true
       }
       answerSelected.push(objAnswerSelect);
     } else {
-      debugger
-      const isExitKey = answerSelected[answerIndex].aKey.find((item: string) => item == answerKey)
+      const isExitKey = answerSelected[answerIndex].answerId.find((item: number) => item == answerId)
       if (!isExitKey) {
-        answerSelected[answerIndex].aKey.push(answerKey);
+        answerSelected[answerIndex].answerId.push(answerId);
       } else {
-        const index = answerSelected[answerIndex].aKey.findIndex((item: string) => item == answerKey);
-        answerSelected[answerIndex].aKey = answerSelected[answerIndex].aKey.slice(index, 1);
+        const index = answerSelected[answerIndex].answerId.findIndex((item: number) => item == answerId);
+        answerSelected[answerIndex].answerId = answerSelected[answerIndex].answerId.slice(index, 1);
       }
     }
   
   }
 
-  const handleSelectSingleAnswer = (answerKey: string, questionId: number) => {
-    let keyAnswers: string[] = [];
-    keyAnswers = [answerKey];
-    setSelecting(keyAnswers);
+  const handleSelectSingleAnswer = (answerId: number, questionId: number) => {
+    let idAnswers: number[] = [];
+    idAnswers = [answerId];
+    setSelecting(idAnswers);
     let objAnswerSelect: answerSelect = {
       qId: questionId,
-      aKey: keyAnswers,
-      isCorrect: false,
+      answerId: idAnswers,
       isMulti: false
     }
 
-    let answerCorrectKey = `${answerKey}_correct`;
-    if (question[currentQuestion].correct_answers[answerCorrectKey] == "true") {
-      objAnswerSelect.isCorrect = true;
-    } else {
-      objAnswerSelect.isCorrect = false;
-    }
     let answerIndex = getAnswerIndex(questionId);
     if (answerIndex < 0) {
       answerSelected.push(objAnswerSelect);
@@ -134,16 +121,12 @@ const Exam = () => {
       a = a-1;
       setCurrentQuestion(a)
     }
-    let answerIndex = getAnswerIndex(question[a].id);
-    if (answerIndex >= 0) {
-      setSelecting(answerSelected[answerIndex].aKey);
-    } else {
-      setSelecting([]);
-    }
+    setQuestionSelecting(a);
   }
 
   const onClickChangeQuestion = (value: number) => {
     setCurrentQuestion(value);
+    setQuestionSelecting(value);
   }
 
   var timeOut = setTimeout(() => {if (timeTest > 0) setTimeTest(timeTest - 1)}, 1000)
@@ -156,7 +139,7 @@ const Exam = () => {
         break;
       case 'time':
         setIsModalEndTimeOpen(false);
-        calcPoint();
+        handleFinishTest();
         setIsModalResultOpen(true)
         break;
       case 'result':
@@ -165,9 +148,13 @@ const Exam = () => {
         break;
       case 'start':
         setIsModalStartOpen(false);
-        setIsStart(true)
-        dispatch(setStartTest(true))
-        timeOut
+        if (question.length > 0) {
+          setIsStart(true);
+          dispatch(setStartTest(true));
+          timeOut;
+        } else {
+          router.push('/top');
+        }
         break;
       case 'answer':
         setIsModalAnswerSystemOpen(false);
@@ -179,15 +166,24 @@ const Exam = () => {
     router.push('/top');
   }
 
-  const handleFinishTest = () => {
+  const handleFinishTest = async () => {
     clearTimeout(timeOut);
-    calcPoint();
+    const categoryId = parseInt(String(params.id));
+    const result: testFinish | null = await finishTestService(answerSelected, categoryId);
+    if (result) {
+      setPoint(result['score']);
+    }
+
     setIsModalResultOpen(true);
   }
 
-  const calcPoint = () => {
-    const arrAnswerCorrect = answerSelected.filter((answer: answerSelect) => answer.isCorrect);
-    setPoint(arrAnswerCorrect.length);
+  const setQuestionSelecting = (index: number) => {
+    let answerIndex = getAnswerIndex(question[index].id);
+    if (answerIndex >= 0) {
+      setSelecting(answerSelected[answerIndex].answerId);
+    } else {
+      setSelecting([]);
+    }
   }
 
   const getAnswerIndex = (questionId: number) => {
@@ -196,15 +192,15 @@ const Exam = () => {
 
   const showAnswers = () => {
     if (question[currentQuestion]) {
-      return Object.keys(question[currentQuestion].answers).map((keyName, i) => {
-        if (question[currentQuestion]?.answers[keyName]) {
+      return Object.keys(question[currentQuestion].answer).map((index) => {
+        if (question[currentQuestion]?.answer[index]) {
           return (
             <ButtonCustom
-              key={`question_${i}`}
-              btnKey={`question_${i}`}
-              text={`${i+1}. ${question[currentQuestion]?.answers[keyName]}`}
-              className={selecting.includes(keyName) ? "question_answer text-left mb-2.5 selected" : "question_answer text-left mb-2.5"}
-              evClick={() => onSelectAnswer(keyName, question[currentQuestion].id, question[currentQuestion].multiple_correct_answers)}
+              key={`question_${index}`}
+              btnKey={`question_${index}`}
+              text={`${parseInt(index) + 1}. ${question[currentQuestion]?.answer[index].name}`}
+              className={selecting.includes(question[currentQuestion]?.answer[index].id) ? "question_answer text-left mb-2.5 selected" : "question_answer text-left mb-2.5"}
+              evClick={() => onSelectAnswer(question[currentQuestion]?.answer[index].id, question[currentQuestion].id, question[currentQuestion].multiple)}
             />
           )
         }
@@ -242,45 +238,45 @@ const Exam = () => {
   }
 
   const multiAnswer = (question: any) => {
-    return question.multiple_correct_answers == 'true' ? '(Multiple answer)' : '';
+    return question.multiple == 'true' ? '(Multiple answer)' : '';
   }
 
-  const listAnswer = () => {
-    return Object.keys(question).map((key, index) => {
-      return (
-        <div key={question[key].id}>
-          <p className="qt_name" key={question[key].id}>{`Q${index + 1}: ${question[key].question} ${multiAnswer(question[key])}`}</p>
-          <div className="flex direction-row">
-            <div>
-              {Object.keys(question[key].answers).map((aKey, i) => {
-                if (question[key].answers[aKey]) {
-                  return (
-                    <p key={i} className={question[key].correct_answers[`${aKey}_correct`] == 'true' ? "ml-10 bg-green-500" : "ml-10"}>{`${i + 1}) ${question[key].answers[aKey]}`}</p>
-                  )
-                }
-              })}
-            </div>
-            <div>
-              {Object.keys(question[key].answers).map((aKey, i) => {
-                if (question[key].answers[aKey]) {
-                  return (
-                    <p
-                      key={i}
-                      className={
-                        answerSelected.find((answer: answerSelect) => answer.qId == question[key].id && answer.aKey.includes(aKey)) ? "ml-10 selected" : "ml-10"
-                      }
-                    >
-                      {`${i + 1}) ${question[key].answers[aKey]}`}
-                    </p>
-                  )
-                }
-              })}
-            </div>
-          </div>
-        </div>
-      )
-    })
-  }
+  // const listAnswer = () => {
+  //   return Object.keys(question).map((key, index) => {
+  //     return (
+  //       <div key={question[key].id}>
+  //         <p className="qt_name" key={question[key].id}>{`Q${index + 1}: ${question[key].question} ${multiAnswer(question[key])}`}</p>
+  //         <div className="flex direction-row">
+  //           <div>
+  //             {Object.keys(question[key].answers).map((aKey, i) => {
+  //               if (question[key].answers[aKey]) {
+  //                 return (
+  //                   <p key={i} className={question[key].correct_answers[`${aKey}_correct`] == 'true' ? "ml-10 bg-green-500" : "ml-10"}>{`${i + 1}) ${question[key].answers[aKey]}`}</p>
+  //                 )
+  //               }
+  //             })}
+  //           </div>
+  //           <div>
+  //             {Object.keys(question[key].answers).map((aKey, i) => {
+  //               if (question[key].answers[aKey]) {
+  //                 return (
+  //                   <p
+  //                     key={i}
+  //                     className={
+  //                       answerSelected.find((answer: answerSelect) => answer.qId == question[key].id && answer.answerId.includes(aKey)) ? "ml-10 selected" : "ml-10"
+  //                     }
+  //                   >
+  //                     {`${i + 1}) ${question[key].answers[aKey]}`}
+  //                   </p>
+  //                 )
+  //               }
+  //             })}
+  //           </div>
+  //         </div>
+  //       </div>
+  //     )
+  //   })
+  // }
 
   const questionShow = () => {
     if (isStart) {
@@ -289,7 +285,7 @@ const Exam = () => {
           <div
             className="title_box"
           >
-            <span className="text-3xl">{!loading ? `Q${currentQuestion + 1}: ${question[currentQuestion]?.question} ${multiAnswer(question[currentQuestion])}` : ''}</span>
+            <span className="text-3xl">{!loading ? `Q${currentQuestion + 1}: ${question[currentQuestion]?.name} ${multiAnswer(question[currentQuestion])}` : ''}</span>
           </div>
           <div
             key={'question_' + currentQuestion}
@@ -337,12 +333,12 @@ const Exam = () => {
           maskClosable={false}
         >
           <Result
-            title="Start the test?"
+            title={question.length > 0 ? "Start the test?" : "Question doesn't exist. Please select another category!!"}
           />
         </Modal>
-        <Modal title={'Result: '} open={isModalAnswerSystemOpen} onOk={() => handleOk('answer')} width={1000}>
+        {/* <Modal title={'Result: '} open={isModalAnswerSystemOpen} onOk={() => handleOk('answer')} width={1000}>
           {listAnswer()}
-        </Modal>
+        </Modal> */}
       </div>
       <div className="action_button flex justify-between item-center mt-5">
         <ButtonCustom
