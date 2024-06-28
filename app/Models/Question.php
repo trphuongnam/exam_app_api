@@ -26,7 +26,7 @@ class Question extends Model
     ];
 
     public function answer() {
-        $this->hasMany(Answer::class, 'question_id');
+        return $this->hasMany(Answer::class, 'question_id');
     }
 
     public function category() {

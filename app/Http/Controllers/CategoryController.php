@@ -71,9 +71,10 @@ class CategoryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function getQuestionByCategory($category)
     {
-        //
+        print($category);
+        return $this->respondSuccess(['message' => 'get category success']);
     }
 
     /**

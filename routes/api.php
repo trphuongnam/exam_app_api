@@ -35,6 +35,12 @@ Route::group(['middleware' => 'apiAuth'], function ($router) {
     Route::group(['prefix' => 'question'], function ($router) {
         Route::post('/', 'App\Http\Controllers\QuestionController@store');
         Route::post('/import', 'App\Http\Controllers\QuestionController@importExcel');
+        Route::get('/category/{catId}', 'App\Http\Controllers\QuestionController@getQuestionByCategory');
+    });
+
+    // Test route
+    Route::group(['prefix' => 'test'], function ($router) {
+        Route::post('/finish', 'App\Http\Controllers\TestController@finishTest');
     });
 });
 
