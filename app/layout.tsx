@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import "./styles/globals.css";
 import "@/public/styles/index.scss";
 import BaseLayout from "./layouts/baseLayout";
-import { Providers } from "@/app/Providers"
+import { Providers } from "@/app/Providers";
+import { CookiesProvider } from 'next-client-cookies/server';
 
 export const metadata: Metadata = {
   title: "Examp App",
@@ -18,7 +19,9 @@ export default function RootLayout({
     <Providers>
       <html lang="en">
         <body className="container mx-auto border-solid bg-white">
-          <BaseLayout childComponent={children}></BaseLayout>
+          <CookiesProvider>
+            <BaseLayout childComponent={children}></BaseLayout>
+          </CookiesProvider>
         </body>
       </html>
     </Providers>

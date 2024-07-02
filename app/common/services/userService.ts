@@ -9,11 +9,7 @@ export const getUserService = createAsyncThunk(
   async () => {
     const response = await axiosRequest.get(
       GET_USER,
-      {
-        headers: {
-          Authorization: getTokenFromCookie()
-        }
-      }
+      {}
     )
     return response.data.data
   },

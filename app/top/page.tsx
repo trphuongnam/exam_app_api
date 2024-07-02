@@ -26,7 +26,9 @@ const Top = () => {
     if (!authenticationRouter(cookies) && isLogin) {
       router.push('/login');
     } else {
-      getCategories();
+      if (categories.length < 1) {
+        getCategories();
+      }
     }
   }, [])
 

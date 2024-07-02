@@ -10,11 +10,7 @@ export const finishTestService = async (answer: answerSelect[], categoryId: numb
   await axiosRequest.post(
     FINISH_TEST,
     {category: categoryId, data: answer},
-    {
-      headers: {
-        Authorization: getTokenFromCookie()
-      }
-    }
+    {}
   ).then(({data}) => {
     openNotification('Finish Test', data.data.message, 200);
     result = data.data;

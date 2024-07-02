@@ -3,3 +3,8 @@ export type LoginData = {
   password: string,
   remember: boolean
 }
+
+export type loginResult = {
+  success: boolean,
+  token: string
+}
