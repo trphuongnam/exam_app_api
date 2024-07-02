@@ -4,6 +4,8 @@ import { getTokenFromCookie } from '@/app/common/util/functions/getTokenFromCook
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { FETCH_CATEGORY, FETCH_CATEGORY_SELECT } from '@/app/stores/constant/categoryConst'
 import { openNotification } from "../util/notification";
+import removeTokenCookie from "../hook/removeTokenCookie";
+import { categoryResponse } from "../interfaces/categoryInterface";
 
 type PostData = {
   name: string;
@@ -20,8 +22,15 @@ type queryParams = {
 export const getCategoryService = createAsyncThunk(
   FETCH_CATEGORY,
   async (params: queryParams) => {
+    let result: categoryResponse = {
+      data: [],
+      total: 0,
+      totalPage: 0,
+      currentPage: 0,
+      pageSize: 0,
+    }
     const {page, numRow} = {...params};
-    const response = await axiosRequest.get(
+    await axiosRequest.get(
       GET_CATEGORY,
       {
         headers: {
@@ -32,14 +41,20 @@ export const getCategoryService = createAsyncThunk(
           row: numRow
         }
       }
-    )
-    return {
-      data: response.data.data.data,
-      total: response.data.total,
-      totalPage: response.data.total_page,
-      currentPage: response.data.page_current,
-      pageSize: response.data.page_size,
-    }
+    ).then(({data}) => {
+      result = {
+        data: data.data.data,
+        total: data.total,
+        totalPage: data.total_page,
+        currentPage: data.page_current,
+        pageSize: data.page_size,
+      }
+    }).catch(({response}) => {
+      if (response.status == '401') {
+        removeTokenCookie()
+      }
+    })
+    return result;
   },
 )
 
@@ -70,11 +85,7 @@ export const addCategory = async (postData: PostData) => {
   await axiosRequest.post(
     ADD_CATEGORY,
     postData,
-    {
-      headers: {
-        Authorization: getTokenFromCookie()
-      }
-    }
+    {}
   ).then(({data}) => {
     openNotification('Create Category', data.data.message, 200);
   }).catch(() => {

@@ -26,12 +26,7 @@ export const importQuestion = async (csvFile: FormData) => {
   await axiosRequest.post(
     IMPORT_QUESTION,
     csvFile,
-    {
-      headers: {
-        Authorization: getTokenFromCookie(),
-        "Content-Type": 'multipart/form-data'
-      }
-    }
+    {}
   ).then(({data}) => {
     openNotification('Import Question', data.data.message, 200);
   }).catch(() => {

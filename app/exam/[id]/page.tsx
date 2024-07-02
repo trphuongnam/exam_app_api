@@ -13,6 +13,8 @@ import { getQuestionCategoryService } from "@/app/common/services/questionServic
 import { ThunkDispatch } from "@reduxjs/toolkit";
 import { finishTestService } from "@/app/common/services/testService"
 import { testFinish } from "@/app/common/interfaces/testInterface";
+import { questionApi } from "@/app/common/interfaces/questionInterface";
+import { StepProps } from "antd";
 
 const Exam = () => {
   const router = useRouter();
@@ -21,7 +23,7 @@ const Exam = () => {
   const dispatchThunk = useDispatch() as ThunkDispatch<any, any, any>;
   const params = useParams();
   const isLogin = useSelector((state: any) => state.login.isLogin);
-  const question:any = useSelector((state: any) => state.question.questions);
+  const question:questionApi[] = useSelector((state: any) => state.question.questions);
   const loading: boolean = useSelector((state: any) => state.question.loading);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [point, setPoint] = useState(0);
@@ -34,11 +36,14 @@ const Exam = () => {
   const [selecting, setSelecting] = useState([] as number[]);
   const [timeTest, setTimeTest] = useState(10000);
   const [isStart, setIsStart] = useState(false);
+  const [steps, setSteps] = useState([] as StepProps[]);
 
   useEffect(() => {
     if (!authenticationRouter(cookies) && isLogin) {
       router.push('/login');
     } else {
+      setSteps([]);
+      setSelecting([]);
       getQuestionByCategory(String(params.id))
       setIsModalStartOpen(true)
     }
@@ -57,6 +62,19 @@ const Exam = () => {
       }
     }
   }, [timeTest, isStart])
+
+  useEffect(() => {
+    let step: StepProps[] = []
+    if (question && question.length > 0) {
+      question.forEach((item, index) => {
+        step.push({
+          className: String(item.id),
+          status: index < 1 ? 'process' : 'wait',
+        })
+      });
+      setSteps(step);
+    }
+  }, [question])
 
   const getQuestionByCategory = (ctgId: string) => {
     dispatchThunk(getQuestionCategoryService(ctgId))
@@ -113,20 +131,37 @@ const Exam = () => {
   }
 
   const onChangeQuestion = (type: string) => {
-    let a = currentQuestion
+    let a = currentQuestion;
     if (type == 'next') {
       a = a+1;
-      setCurrentQuestion(a)
     } else {
       a = a-1;
-      setCurrentQuestion(a)
     }
+    setStepStatus(currentQuestion, a);
+    setCurrentQuestion(a);
     setQuestionSelecting(a);
   }
 
   const onClickChangeQuestion = (value: number) => {
+    setStepStatus(currentQuestion, value);
     setCurrentQuestion(value);
     setQuestionSelecting(value);
+  }
+
+  const setStepStatus = (currentStepIndex: number, targetStepIndex: number) => {
+    // Set status for target question
+    let step = [...steps];
+    step[targetStepIndex].status = 'process';
+    setSteps(step);
+
+    // Set status for old question
+    const oldQuestionId = parseInt(step[currentStepIndex].className!);
+    const answerIndex = getAnswerIndex(oldQuestionId);
+    if (answerIndex >= 0) {
+      step[currentStepIndex].status = 'finish';
+    } else {
+      step[currentStepIndex].status = 'wait';
+    }
   }
 
   var timeOut = setTimeout(() => {if (timeTest > 0) setTimeTest(timeTest - 1)}, 1000)
@@ -193,14 +228,15 @@ const Exam = () => {
   const showAnswers = () => {
     if (question[currentQuestion]) {
       return Object.keys(question[currentQuestion].answer).map((index) => {
-        if (question[currentQuestion]?.answer[index]) {
+        const i = parseInt(index);
+        if (question[currentQuestion]?.answer[i]) {
           return (
             <ButtonCustom
-              key={`question_${index}`}
-              btnKey={`question_${index}`}
-              text={`${parseInt(index) + 1}. ${question[currentQuestion]?.answer[index].name}`}
-              className={selecting.includes(question[currentQuestion]?.answer[index].id) ? "question_answer text-left mb-2.5 selected" : "question_answer text-left mb-2.5"}
-              evClick={() => onSelectAnswer(question[currentQuestion]?.answer[index].id, question[currentQuestion].id, question[currentQuestion].multiple)}
+              key={`question_${i}`}
+              btnKey={`question_${i}`}
+              text={`${i + 1}. ${question[currentQuestion]?.answer[i].name}`}
+              className={selecting.includes(question[currentQuestion]?.answer[i].id) ? "question_answer text-left mb-2.5 selected" : "question_answer text-left mb-2.5"}
+              evClick={() => onSelectAnswer(question[currentQuestion]?.answer[i].id, question[currentQuestion].id, question[currentQuestion].multiple)}
             />
           )
         }
@@ -215,7 +251,7 @@ const Exam = () => {
       <Steps
         size="default"
         current={currentQuestion}
-        items={question}
+        items={steps}
         onChange={onClickChangeQuestion}
       />
     )
@@ -333,7 +369,7 @@ const Exam = () => {
           maskClosable={false}
         >
           <Result
-            title={question.length > 0 ? "Start the test?" : "Question doesn't exist. Please select another category!!"}
+            title={question.length > 0 ? "Start the test?" : "Questions don't exist. Please select another category!!"}
           />
         </Modal>
         {/* <Modal title={'Result: '} open={isModalAnswerSystemOpen} onOk={() => handleOk('answer')} width={1000}>

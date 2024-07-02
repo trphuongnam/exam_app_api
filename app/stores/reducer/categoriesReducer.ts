@@ -1,8 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { getCategoryService, getCategorySelectService } from "@/app/common/services/categoryService";
+import { categoryApi } from "@/app/common/interfaces/categoryInterface";
 
 const initialState = {
-  categories: [],
+  categories: [] as categoryApi[],
   paginate: {
     total: 0,
     totalPage: 0,

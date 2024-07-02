@@ -13,14 +13,20 @@ export type question = {
 }
 
 export type questionApi = {
-  id: string,
+  id: number,
   name: string,
   description: string,
   category_id: number,
   multiple: number,
   created_at: string,
   updated_at: string,
-  answer: any[]
+  answer: answerApi[]
+}
+
+export type answerApi = {
+  id: number,
+  name: string,
+  question_id: number
 }
 
 export type answers = {

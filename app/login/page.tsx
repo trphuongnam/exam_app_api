@@ -1,20 +1,20 @@
 "use client"
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Image, Checkbox, Form, Input} from "antd";
 import type { FormProps } from 'antd';
 import ButtonCustom from "@/app/components/button"
 import { LoginData } from "@/app/common/interfaces/loginInterface";
-import { LOGIN } from '@/app/common/util/apiUrls/index';
-import { axiosRequest } from "@/app/connection";
 import { loginAction, tokenAction } from "../stores/action/login";
-import { openNotification } from "../common/util/notification";
+import { loginService } from "@/app/common/services/authService"
 
 const Login = () => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const isLogin = useSelector((state: any) => state.login.isLogin);
+  const token = useSelector((state: any) => state.login.token);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,6 +22,14 @@ const Login = () => {
   const [isDisabled, setIsDisabled] = useState(false);
   const inputEmailRef = useRef(null);
   const inputPasswordRef = useRef(null);
+
+  useEffect(() => {
+    if (token && isLogin) {
+      router.push('/top');
+    } else {
+      router.push('/login');
+    }
+  }, [token, isLogin])
 
   const onFinish: FormProps<LoginData>['onFinish'] = (values) => {
     setIsDisabled(false);
@@ -39,22 +47,18 @@ const Login = () => {
     setEmail(inputEmail);
     setPassword(inputPassword);
 
-    const data = {
+    const data: LoginData = {
       'email': inputEmail,
       'password': inputPassword,
       'remember': remember
     }
-    await axiosRequest.post(LOGIN, data).then(({data}) => {
+    const result = await loginService(data);
+    if (result) {
+      dispatch(loginAction(result['success']));
+      dispatch(tokenAction(result['token']));
+      document.cookie = `token=${result['token']}`;
       router.push('/top');
-      document.cookie = `token=${data.data.access_token}`;
-      dispatch(loginAction(true));
-      dispatch(tokenAction(data.data.access_token));
-      openNotification(data.data.message, '', data.data.status);
-    }).catch(() => {
-      dispatch(loginAction(false));
-      openNotification('Error', `Can't handle your action. Please try again!!`, 500);
-      return null;
-    })
+    }
     setIsDisabled(false);
   }
 
