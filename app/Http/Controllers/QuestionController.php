@@ -171,12 +171,13 @@ class QuestionController extends Controller
     }
 
     public function getQuestionByCategory($catId) {
-        $questions = Question::with(['answer' => function ($query) {
-                        $query->select('id', 'name', 'question_id');
-                    }])
-                    ->where('category_id', $catId)
-                    ->limit(20)
-                    ->get();
+        $questions = Question::inRandomOrder()
+                        ->with(['answer' => function ($query) {
+                            $query->select('id', 'name', 'question_id');
+                        }])
+                        ->where('category_id', $catId)
+                        ->limit(20)
+                        ->get();
         return $this->respondSuccess($questions);
     }
 }
