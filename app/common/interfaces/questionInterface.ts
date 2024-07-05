@@ -26,7 +26,9 @@ export type questionApi = {
 export type answerApi = {
   id: number,
   name: string,
-  question_id: number
+  question_id: number,
+  correct: number,
+  key: string
 }
 
 export type answers = {

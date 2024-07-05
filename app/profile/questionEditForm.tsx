@@ -1,11 +1,13 @@
-import { Modal, Button, Select, Form, Input, Checkbox } from "antd";
+"use client"
+import { Button, Select, Form, Input, Checkbox, Spin } from "antd";
 import type { FormProps, CheckboxProps } from 'antd';
 import { useEffect, useState } from "react";
 import { ThunkDispatch } from "@reduxjs/toolkit";
 import { useSelector, useDispatch } from "react-redux";
 import { getCategorySelectService } from "../common/services/categoryService";
-import { addQuestion } from "../common/services/questionService";
-import { postData } from "../common/interfaces/questionInterface";
+import { updateQuestion, getDetailQuestion } from "../common/services/questionService";
+import { answerApi, postData } from "../common/interfaces/questionInterface";
+import { questionApi } from "@/app/common/interfaces/questionInterface"
 
 type FieldType = {
   name: string;
@@ -19,25 +21,22 @@ type FieldType = {
   correct: string;
 };
 
-const QuestionForm = ({
-  visible,
-  className,
-  maskClosable = false,
-  //Event
-  evOk,
-  evCancel
+const QuestionEditForm = ({
+  questionId,
+  reloadPage
 }: Readonly<{
-  visible: boolean;
   className?: string;
-  maskClosable?: boolean;
-  evOk?: any;
-  evCancel?: any;
+  questionId: number;
+  reloadPage: any;
 }>) => {
   const [form] = Form.useForm();
   const dispatch = useDispatch<ThunkDispatch<any, any, any>>();
   const [selected, setSelected] = useState('');
   const [isDisable, setIsDisable] = useState(true);
   const [answerCorrect, setAnswerCorrect] = useState([] as string[]);
+  const [initData, setInitData] = useState({} as any);
+  const [loading, setLoading] = useState(false as boolean);
+  const [answer, setAnswer] = useState([] as answerApi[]);
   const categories = useSelector((state: any) => state.category.categorySelect);
   const types = [
     { value: false, label: 'Single' },
@@ -45,14 +44,54 @@ const QuestionForm = ({
   ]
 
   useEffect(() => {
-    if (visible) {
-      dispatch(getCategorySelectService());
+    setLoading(true);
+    form.resetFields();
+    if (questionId) {
+      if (categories.length == 0) {
+        dispatch(getCategorySelectService());
+      }
+
+      getQuestion();
     }
-  }, [visible])
+    setLoading(false);
+  }, [questionId])
+
+  useEffect(() => {
+    if (initData) {
+      form.setFieldsValue(initData);
+      initData.categoryId ? setIsDisable(false) : setIsDisable(true);
+    }
+  }, [initData])
 
   useEffect(() => {
     selected ? setIsDisable(false) : setIsDisable(true);
   }, [selected])
+
+  const getQuestion = async () => {
+    const question: questionApi = await getDetailQuestion(questionId);
+    setInitData(
+      {
+        categoryId: question.category_id,
+        multiple: question.multiple == 1 ? "single" : "multiple",
+        name: question.name,
+        description: question.description,
+        answer_a: question.answer[0].name,
+        answer_b: question.answer[1].name,
+        answer_c: question.answer[2].name,
+        answer_d: question.answer[3].name,
+      }
+    )
+
+    setAnswer(question.answer);
+
+    let answerCorrect: string[] = [];
+    question.answer.forEach((ans: answerApi) => {
+      if (ans.correct == 1) {
+        answerCorrect.push(ans.key);
+      }
+    })
+    setAnswerCorrect(answerCorrect);
+  }
 
   const answerItem = (label: string, name: any) => {
     return (
@@ -64,7 +103,7 @@ const QuestionForm = ({
         >
           <Input disabled={isDisable}/>
         </Form.Item>
-        <Checkbox.Group className={`${name}`}>
+        <Checkbox.Group className={`${name}`} value={answerCorrect}>
           <Checkbox value={name} onChange={onChange}></Checkbox>
         </Checkbox.Group>
       </div>
@@ -73,10 +112,10 @@ const QuestionForm = ({
   
   const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
     const listAnswer = [
-      {key: 'answer_a', name: values.answer_a, correct: answerCorrect.includes('answer_a') ? 1 : 2},
-      {key: 'answer_b', name: values.answer_b, correct: answerCorrect.includes('answer_b') ? 1 : 2},
-      {key: 'answer_c', name: values.answer_c, correct: answerCorrect.includes('answer_c') ? 1 : 2},
-      {key: 'answer_d', name: values.answer_d, correct: answerCorrect.includes('answer_d') ? 1 : 2},
+      {id: answer[0].id, key: 'answer_a', name: values.answer_a, correct: answerCorrect.includes('answer_a') ? 1 : 2},
+      {id: answer[1].id, key: 'answer_b', name: values.answer_b, correct: answerCorrect.includes('answer_b') ? 1 : 2},
+      {id: answer[2].id, key: 'answer_c', name: values.answer_c, correct: answerCorrect.includes('answer_c') ? 1 : 2},
+      {id: answer[3].id, key: 'answer_d', name: values.answer_d, correct: answerCorrect.includes('answer_d') ? 1 : 2},
     ];
 
     let dataPost: postData = {
@@ -88,19 +127,13 @@ const QuestionForm = ({
       correct: JSON.stringify(answerCorrect)
     };
 
-    addQuestion(dataPost);
-    onCloseForm();
+    updateQuestion(dataPost, questionId);
+    reloadPage()
   };
   
   const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
-
-  const onCloseForm = () => {
-    form.resetFields();
-    setSelected('');
-    evCancel();
-  }
 
   const handleChange = (value: string) => {
     setSelected(value);
@@ -124,17 +157,11 @@ const QuestionForm = ({
     setAnswerCorrect(correct);
   }
 
-  return (
-    <>
-      <Modal
-        title={'Add Question'}
-        open={visible}
-        onOk={evOk}
-        onCancel={() => {onCloseForm()}}
-        className={className}
-        maskClosable={maskClosable}
-        okButtonProps={{ style: { display: 'none' } }}
-      >
+  const formEdit = () => {
+    if (loading) {
+      return (<Spin/>);
+    } else {
+      return (
         <Form
           form={form}
           name="question"
@@ -144,10 +171,7 @@ const QuestionForm = ({
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
-          initialValues={{
-            ["categoryId"]: selected,
-            ["multiple"]: "single"
-          }}
+          initialValues={initData}
         >
           <Form.Item<FieldType>
             label="Category"
@@ -193,13 +217,19 @@ const QuestionForm = ({
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
-              Create
+              Save
             </Button>
           </Form.Item>
         </Form>
-      </Modal>
+      )
+    }
+  }
+
+  return (
+    <>
+      {formEdit()}
     </>
   );
 }
 
-export default QuestionForm;
+export default QuestionEditForm;

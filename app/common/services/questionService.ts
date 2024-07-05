@@ -1,7 +1,7 @@
 import { axiosRequest } from "@/app/connection";
-import { ADD_QUESTION, IMPORT_QUESTION, GET_QUESTION_CATEGORY } from "@/app/common/util/apiUrls/index";
+import { ADD_QUESTION, UPDATE_QUESTION, IMPORT_QUESTION, GET_QUESTION_CATEGORY, GET_QUESTION_DETAIL } from "@/app/common/util/apiUrls/index";
 import { getTokenFromCookie } from "../util/functions/getTokenFromCookie";
-import { postData } from "../interfaces/questionInterface";
+import { postData, questionApi } from "../interfaces/questionInterface";
 import { openNotification } from "../util/notification";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { GET_QUESTION_BY_CATEGORY } from "@/app/stores/constant/questionConst";
@@ -19,6 +19,22 @@ export const addQuestion = async (postData: postData) => {
     openNotification('Create Question', data.data.message, 200);
   }).catch(() => {
     openNotification('Create Question', 'Create question fail', 500);
+  })
+}
+
+export const updateQuestion = async (postData: postData, questionId: number) => {
+  await axiosRequest.put(
+    UPDATE_QUESTION.replace(':questionId', String(questionId)),
+    postData,
+    {
+      headers: {
+        Authorization: getTokenFromCookie()
+      }
+    }
+  ).then(({data}) => {
+    openNotification('Update Question', data.data.message, 200);
+  }).catch(() => {
+    openNotification('Update Question', 'Create question fail', 500);
   })
 }
 
@@ -50,3 +66,39 @@ export const getQuestionCategoryService = createAsyncThunk(
     }
   },
 )
+
+export const getDetailQuestion = async (questionId: number) => {
+  let result: questionApi = {
+      "id": 0,
+      "name": "",
+      "description": "",
+      "category_id": 0,
+      "multiple": 1,
+      "created_at": "",
+      "updated_at": "",
+      "answer": []
+  };
+  await axiosRequest.get(
+    GET_QUESTION_DETAIL.replace(':questionId', String(questionId)),
+    {
+      headers: {
+        Authorization: getTokenFromCookie()
+      }
+    }
+  ).then(({data}) => {
+    result = data.data[0];
+  }).catch(() => {
+    result = {
+        "id": 0,
+        "name": "",
+        "description": "",
+        "category_id": 0,
+        "multiple": 1,
+        "created_at": "",
+        "updated_at": "",
+        "answer": []
+    };
+  })
+
+  return result;
+}
