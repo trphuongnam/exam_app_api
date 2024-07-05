@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Category;
+use App\Models\Question;
 use App\Traits\ResponseTrait;
 
 class CategoryController extends Controller
@@ -71,21 +72,35 @@ class CategoryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function getQuestionByCategory($category)
+    public function getQuestionByCategory($catId)
     {
-        print($category);
-        return $this->respondSuccess(['message' => 'get category success']);
+        $questions = Question::where('category_id', $catId)->get()->toArray();
+        $result = [];
+        foreach ($questions as $key => $value) {
+            array_push($result, [
+                'id' => $value['id'],
+                'title' => $value['name'],
+                'key' => $value['id'],
+                'isLeaf' => true,
+            ]);
+        }
+
+        return $this->respondSuccess([
+            'message' => 'get question success',
+            'data' => $result
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Display the specified resource.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function show($categoryId)
     {
-        //
+        $category = Category::where('id', $categoryId)->get();
+        return $this->respondSuccess($category);
     }
 
     /**
@@ -97,7 +112,22 @@ class CategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $category = Category::find($id);
+            if ($category) {
+                $category->name = $request->name;
+                $category->description = $request->description;
+                $category->start_time = $request->start_time;
+                $category->end_time = $request->end_time;
+                $category->save();
+                return $this->respondSuccess(['message' => 'Update category success']);
+            }
+            return $this->respondSuccess(['message' => 'Couldn\'t find the category !!!']);
+        } catch (\Throwable $th) {
+            throw $th;
+            return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
+        }
+        
     }
 
     /**
@@ -123,6 +153,29 @@ class CategoryController extends Controller
             return $this->respondSuccess($categories);
         } catch (\Throwable $th) {
             // throw $th;
+            return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
+        }
+    }
+
+    public function getCategoryTree(Request $request)
+    {
+        try {
+            $categories = Category::select('id', 'name')->get()->toArray();
+            $result = [];
+            
+            foreach ($categories as $key => $value) {
+                $item = [
+                    'id' => $value['id'],
+                    'title' => $value['name'],
+                    'key' => $value['id'],
+                    'isLeaf' => false,
+                    'children' => [],
+                ];
+                array_push($result, $item);
+            }
+            return $this->respondSuccess($result);
+        } catch (\Throwable $th) {
+            throw $th;
             return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
         }
     }

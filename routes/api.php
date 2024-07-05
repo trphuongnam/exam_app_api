@@ -29,6 +29,10 @@ Route::group(['middleware' => 'apiAuth'], function ($router) {
         Route::get('/', 'App\Http\Controllers\CategoryController@index');
         Route::get('/select', 'App\Http\Controllers\CategoryController@getCategory');
         Route::post('/', 'App\Http\Controllers\CategoryController@store');
+        Route::get('/tree', 'App\Http\Controllers\CategoryController@getCategoryTree');
+        Route::get('/tree/{catId}', 'App\Http\Controllers\CategoryController@getQuestionByCategory');
+        Route::get('/{categoryId}', 'App\Http\Controllers\CategoryController@show');
+        Route::put('/{id}', 'App\Http\Controllers\CategoryController@update');
     });
 
     // Question route
@@ -36,6 +40,8 @@ Route::group(['middleware' => 'apiAuth'], function ($router) {
         Route::post('/', 'App\Http\Controllers\QuestionController@store');
         Route::post('/import', 'App\Http\Controllers\QuestionController@importExcel');
         Route::get('/category/{catId}', 'App\Http\Controllers\QuestionController@getQuestionByCategory');
+        Route::get('/{questionId}', 'App\Http\Controllers\QuestionController@show');
+        Route::put('/{id}', 'App\Http\Controllers\QuestionController@update');
     });
 
     // Test route
