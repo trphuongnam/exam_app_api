@@ -64,9 +64,14 @@ class QuestionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($category)
+    public function show($questionId)
     {
-        print($category);
+        $question = Question::with(['answer' => function ($query) {
+                            $query->select('id', 'name', 'question_id', 'key', 'correct');
+                        }])
+                        ->where('id', $questionId)
+                        ->get();
+        return $this->respondSuccess($question);
     }
 
     /**
@@ -78,7 +83,34 @@ class QuestionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $question = Question::find($id);
+            if ($question) {
+                $question->name = $request->name;
+                $question->description = $request->description ? $request->description : '';
+                $question->category_id = $request->category_id;
+                $question->multiple = $request->multiple ? 1 : 2;
+                $question->save();
+            }
+
+            foreach ($request->answers as $value) {
+                $answer = Answer::find($value['id']);
+                if ($answer) {
+                    $answer->name = $value['name'];
+                    $answer->key = $value['key'];
+                    $answer->correct = $value['correct'];
+                    $answer->save();
+                }
+                DB::commit();
+            }
+            DB::commit();
+            return $this->respondSuccess(['message' => 'Update question success 22222']);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+            return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
+        }
     }
 
     /**
