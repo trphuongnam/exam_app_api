@@ -107,6 +107,14 @@ body {
       margin-right: 10px
     }
   }
+
+  // Tree
+  .category-tree {
+    min-height: calc(100vh - 200px);
+    max-height: calc(100vh - 200px);
+    overflow: auto;
+    padding: 20px
+  }
 }
 
 @import 'leftBar';

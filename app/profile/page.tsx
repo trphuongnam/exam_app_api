@@ -7,12 +7,14 @@ import { useSelector, useDispatch } from "react-redux";
 import { ThunkDispatch } from "@reduxjs/toolkit";
 import { getUserService } from "../common/services/userService";
 import { Tabs, Spin, Upload } from 'antd';
-import { UserOutlined, LineChartOutlined, UploadOutlined } from '@ant-design/icons';
+import { UserOutlined, LineChartOutlined, UploadOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import ButtonCustom from "../components/button";
 import CategoryForm from "./categoryForm";
 import QuestionForm from "./questionForm";
+import ListQuestion from "./question";
 import { importQuestion } from "../common/services/questionService";
 import { openNotification } from "../common/util/notification";
+import { tabIndex } from "../common/util/constant";
 
 const Top = () => {
   const router = useRouter();
@@ -27,7 +29,8 @@ const Top = () => {
   
   const tabs = [
     'Info',
-    'Chart'
+    'Questions',
+    'History'
   ]
   
   useEffect(() => {
@@ -40,7 +43,7 @@ const Top = () => {
 
   const tabContent = (index: number) => {
     switch (index) {
-      case 0:
+      case tabIndex.info:
         if (userData.length > 0 ) {
           return (
             <>
@@ -53,6 +56,8 @@ const Top = () => {
             </>
           )
         }
+      case tabIndex.question:
+        return (<ListQuestion tabId={tabIndex.question}/>)
       default:
         break;
     }
@@ -110,8 +115,8 @@ const Top = () => {
     }
     return (
       <Tabs
-        defaultActiveKey="1"
-        items={[UserOutlined, LineChartOutlined].map((Icon, i) => {
+        defaultActiveKey={String(tabIndex.info)}
+        items={[UserOutlined, QuestionCircleOutlined, LineChartOutlined].map((Icon, i) => {
           const id = String(i + 1);
           return {
             key: id,

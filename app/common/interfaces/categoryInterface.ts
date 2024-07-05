@@ -20,3 +20,25 @@ export type categoryResponse = {
   total: number,
   totalPage: number
 }
+
+export type categoryForm = {
+  name: string,
+  description: string,
+  startTime: string,
+  endTime: string,
+}
+
+export type categoryTree = {
+  id: number
+  title: string;
+  key: string;
+  isLeaf: boolean;
+  children: questionTree[];
+}
+
+export type questionTree = {
+  id: number;
+  title: string;
+  key: string;
+  isLeaf: boolean;
+}
