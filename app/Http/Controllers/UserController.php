@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Results;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Traits\ResponseTrait;
 
 class UserController extends Controller
 {
+    use ResponseTrait;
     /**
      * Display a listing of the resource.
      *
@@ -93,5 +96,28 @@ class UserController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function getTestHistory(Request $request) {
+        $current_page = $request->page ? $request->page : 1;
+        $per_page = $request->row ? $request->row : 10;
+
+        $results = Results::join('categories as ctg', function ($join) {
+                    $join->on('results.category_id', '=', 'ctg.id');
+                })
+                ->where('results.user_id', '=', auth()->payload()->get('sub'))
+                ->select(
+                    'results.id',
+                    'results.score',
+                    'results.created_at as test_time',
+                    'ctg.name as ctg_name',
+                    'ctg.description as ctg_desc',
+                    'ctg.start_time as ctg_start_time',
+                    'ctg.end_time as ctg_end_time'
+                )
+                ->paginate($per_page);
+        
+        $total_page = ceil($results->total() / $per_page);
+        return $this->respondSuccessPaginate($results, $current_page, $total_page, $results->perPage(), $results->total());
     }
 }
