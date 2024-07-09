@@ -22,6 +22,7 @@ Route::group(['middleware' => 'apiAuth'], function ($router) {
     // User route
     Route::group(['prefix' => 'user'], function ($router) {
         Route::get('/', 'App\Http\Controllers\UserController@index');
+        Route::get('/history', 'App\Http\Controllers\UserController@getTestHistory');
     });
 
     // Category route
