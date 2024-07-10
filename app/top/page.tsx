@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { ThunkDispatch } from "@reduxjs/toolkit";
 import { getCategoryService } from "../common/services/categoryService";
 import { category } from "@/app/common/interfaces/categoryInterface";
-import { Spin, Avatar, List, Skeleton } from "antd";
+import { Avatar, List, Skeleton } from "antd";
 import ButtonCustom from "../components/button";
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { CaretRightOutlined } from "@ant-design/icons";

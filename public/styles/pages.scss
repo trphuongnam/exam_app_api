@@ -41,3 +41,17 @@
     }
   }
 }
+
+// History
+.history-wrapper {
+  width: 100%;
+  max-height: calc(100vh - 300px);
+  min-height: calc(100vh - 300px);
+  .history-item {
+    width: 100%;
+    margin-bottom: 25px;
+    background: beige;
+    box-shadow: 0px 5px 10px #ccc;
+  }
+}
+

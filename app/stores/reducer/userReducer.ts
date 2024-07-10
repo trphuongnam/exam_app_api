@@ -1,8 +1,16 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getUserService } from "@/app/common/services/userService";
+import { getUserService, getTestHistoryService } from "@/app/common/services/userService";
+import { historyApi } from "@/app/common/interfaces/userInterface";
 
 const initialState = {
   userData: [] as any,
+  historyData: [] as historyApi[],
+  paginate: {
+    total: 0,
+    totalPage: 0,
+    currentPage: 1,
+    pageSize: 10
+  },
   isLoading: false
 }
 
@@ -19,6 +27,15 @@ export const userSlice = createSlice({
       .addCase(getUserService.fulfilled, (state, action) => {
         state.isLoading = false;
         state.userData = action.payload;
+      })
+      .addCase(getTestHistoryService.fulfilled, (state, action) => {
+        state.historyData = action.payload.data;
+        state.paginate = {
+          total: action.payload.total,
+          totalPage: action.payload.totalPage,
+          currentPage: action.payload.currentPage,
+          pageSize: action.payload.pageSize
+        }
       });
   }
 });

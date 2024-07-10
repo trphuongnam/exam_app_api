@@ -20,8 +20,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
   const [isDisabled, setIsDisabled] = useState(false);
-  const inputEmailRef = useRef(null);
-  const inputPasswordRef = useRef(null);
+  const inputEmailRef = useRef(null as any);
+  const inputPasswordRef = useRef(null as any);
 
   useEffect(() => {
     if (token && isLogin) {

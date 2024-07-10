@@ -12,6 +12,7 @@ import ButtonCustom from "../components/button";
 import CategoryForm from "./categoryForm";
 import QuestionForm from "./questionForm";
 import ListQuestion from "./question";
+import HistoryTest from "./historyTest";
 import { importQuestion } from "../common/services/questionService";
 import { openNotification } from "../common/util/notification";
 import { tabIndex } from "../common/util/constant";
@@ -58,6 +59,8 @@ const Top = () => {
         }
       case tabIndex.question:
         return (<ListQuestion tabId={tabIndex.question}/>)
+      case tabIndex.history:
+        return (<HistoryTest tabId={tabIndex.history}/>)
       default:
         break;
     }
