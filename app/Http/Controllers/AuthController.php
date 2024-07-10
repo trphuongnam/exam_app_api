@@ -34,8 +34,8 @@ class AuthController extends Controller
 
             return $this->respondError(401, 'User Not Found', ['status' => 401]);
         } catch (\Throwable $th) {
-            //throw $th;
-            return $this->respondError(500, 'Internal Server Error', ['status' => 500]);
+            // throw $th;
+            return $this->respondError(500, $th, ['status' => 500]);
         }
         
     }
@@ -56,5 +56,9 @@ class AuthController extends Controller
             return false;
         }
         return $token;
+    }
+
+    public function hello() {
+        echo "////////";
     }
 }

@@ -1,0 +1,53 @@
+version: '3.7'
+services:
+  backend:
+    container_name: backend
+    image: digitalocean.com/php
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: backend
+      SERVICE_TAGS: dev
+    working_dir: /var/www/html/
+    volumes:
+      - ./:/var/www/html/
+    networks:
+      - app-network
+
+  #Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: webserver
+    restart: unless-stopped
+    tty: true
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    ports:
+      - "8080:80"
+    networks:
+      - app-network
+  
+  #MySQL Service
+  db:
+    image: mysql:5.7.22
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_DATABASE: exam_app
+      MYSQL_ROOT_PASSWORD: password
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - app-network
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
