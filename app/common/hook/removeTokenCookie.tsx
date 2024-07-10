@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { loginAction } from "@/app/stores/action/login";
 import { useRouter } from "next/navigation";
 
-const removeTokenCookieHook = () => {
+const RemoveTokenCookieHook = () => {
   const cookie = useCookies();
   const dispatch = useDispatch();
   const router = useRouter();
@@ -16,4 +16,4 @@ const removeTokenCookieHook = () => {
   }, [])
 }
 
-export default removeTokenCookieHook;
+export default RemoveTokenCookieHook;

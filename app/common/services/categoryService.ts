@@ -12,7 +12,7 @@ import { getTokenFromCookie } from '@/app/common/util/functions/getTokenFromCook
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { FETCH_CATEGORY, FETCH_CATEGORY_SELECT } from '@/app/stores/constant/categoryConst'
 import { openNotification } from "../util/notification";
-import removeTokenCookie from "../hook/removeTokenCookie";
+import RemoveTokenCookieHook from "../hook/removeTokenCookie";
 import { categoryApi, categoryResponse, categoryTree, questionTree } from "../interfaces/categoryInterface";
 
 type PostData = {
@@ -59,7 +59,7 @@ export const getCategoryService = createAsyncThunk(
       }
     }).catch(({response}) => {
       if (response.status == '401') {
-        removeTokenCookie()
+        RemoveTokenCookieHook()
       }
     })
     return result;

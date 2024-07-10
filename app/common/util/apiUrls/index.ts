@@ -4,6 +4,7 @@ export const LOGOUT = '/logout'
 
 // User
 export const GET_USER = '/user'
+export const GET_TEST_HISTORY = '/user/history'
 
 // Category
 export const ADD_CATEGORY = '/category'
