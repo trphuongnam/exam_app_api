@@ -31,6 +31,10 @@ RUN chown -R www-data:www-data \
     /var/www/html/storage \
     /var/www/html/bootstrap/cache
 
+RUN chmod o+w /var/www/html/storage/ -R
+
+RUN composer install
+
 # Expose port 9000 and start php-fpm server (for FastCGI Process Manager)
 EXPOSE 9000
 CMD ["php-fpm"]
