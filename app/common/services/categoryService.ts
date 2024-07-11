@@ -93,7 +93,11 @@ export const addCategory = async (postData: PostData) => {
   await axiosRequest.post(
     ADD_CATEGORY,
     postData,
-    {}
+    {
+      headers: {
+        Authorization: getTokenFromCookie()
+      }
+    }
   ).then(({data}) => {
     openNotification('Create Category', data.data.message, 200);
   }).catch(() => {
@@ -105,7 +109,11 @@ export const updateCategory = async (postData: PostData, categoryId: number) => 
   await axiosRequest.put(
     UPDATE_CATEGORY.replace(':catId', String(categoryId)),
     postData,
-    {}
+    {
+      headers: {
+        Authorization: getTokenFromCookie()
+      }
+    }
   ).then(({data}) => {
     openNotification('Update Category', data.data.message, 200);
   }).catch(() => {
