@@ -48,7 +48,7 @@ const Top = () => {
     }
   }
 
-  const testButton = (idTest: string) => {
+  const testButton = (idTest: string, question_count: number) => {
     return (
       <ButtonCustom
         text="Test"
@@ -56,7 +56,7 @@ const Top = () => {
         icon={<CaretRightOutlined />}
         evClick={() => startTest(idTest)}
         isLoading={isDisabled}
-        isDisabled={isDisabled}
+        isDisabled={isDisabled || question_count == 0}
       />
     )
   }
@@ -90,7 +90,7 @@ const Top = () => {
                   title={item.name}
                   description={item.name}
                 />
-                <div>{testButton(item.id)}</div>
+                <div>{testButton(item.id, item.question_count)}</div>
               </List.Item>
             )}
           />

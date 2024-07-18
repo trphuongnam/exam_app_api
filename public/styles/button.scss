@@ -1,5 +1,7 @@
 .ant-btn {
   font-family: $poppins;
+  justify-content: start;
+  margin-bottom: 10px;
   &-primary {
     background-color: $colorButtonText;
     border-radius: 0;

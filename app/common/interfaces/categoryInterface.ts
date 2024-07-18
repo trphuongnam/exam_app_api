@@ -1,6 +1,7 @@
 export type category = {
   id: string,
-  name: string
+  name: string,
+  question_count: number
 }
 
 export type categoryApi = {
@@ -10,7 +11,8 @@ export type categoryApi = {
   start_time: string,
   end_time: string,
   created_at: string,
-  updated_at: string
+  updated_at: string,
+  question_count: number
 }
 
 export type categoryResponse = {

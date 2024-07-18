@@ -10,6 +10,7 @@ import { tabIndex } from '../common/util/constant';
 import { categoryTree } from '../common/interfaces/categoryInterface';
 import QuestionEditForm from './questionEditForm';
 import CategoryEditForm from './categoryEditForm';
+import Loading from '../components/loading';
 
 const ListQuestion = ({
   tabId
@@ -21,6 +22,7 @@ const ListQuestion = ({
   const isLogin = useSelector((state: any) => state.login.isLogin);
   const [ treeCategory, setTreeCategory ] = useState([] as categoryTree[]);
   const [ nodeSelected, setNodeSelected ] = useState({} as any);
+  const [ loading, setLoading ] = useState(false as boolean);
 
   useEffect(() => {
     if (tabId == tabIndex.question) {
@@ -28,6 +30,7 @@ const ListQuestion = ({
       if (!authenticationRouter(cookies) && isLogin) {
         router.push('/login');
       } else {
+        setLoading(true);
         getCategories();
       }
     }
@@ -36,6 +39,7 @@ const ListQuestion = ({
   const getCategories = async () => {
     const categoriesData = await getCategoryTreeService();
     setTreeCategory(categoriesData);
+    setLoading(false);
   }
 
   const getQuestions = async (cateId: number) => {
@@ -86,8 +90,10 @@ const ListQuestion = ({
   return (
     <>
       <Row>
-        <Col span={12} className='border-solid border-2 category-tree'>{categoryTree()}</Col>
-        <Col span={12} className='border-solid border-2 category-tree'>{editForm()}</Col>
+        <Col md={12} sm={24} xs={24} className='border-solid border-2 category-tree'>
+          <Loading isLoading={loading} content={categoryTree()}></Loading>
+        </Col>
+        <Col md={12} sm={24} xs={24} className='border-solid border-2 category-tree'>{editForm()}</Col>
       </Row>
     </>
   )

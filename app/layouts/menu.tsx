@@ -1,12 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Menu, Avatar, Modal } from "antd";
 import { UserOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { menus, loginMenu, logoutMenu } from '@/app/common/util/menu';
 import { useCookies } from "next-client-cookies";
-import store from "../stores/store";
 import { useDispatch, useSelector } from 'react-redux'
 import { loginAction } from "../stores/action/login";
 
@@ -61,7 +60,7 @@ const MenuLayout = () => {
       }
       return (
         <div className="flex items-center justify-end">
-          <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={menuItem} />
+          <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={menuItem} style={{ flex: 1, minWidth: 0 }}/>
           <Avatar style={{ backgroundColor: '#87d068' }} icon={<UserOutlined />} className="cursor-pointer" onClick={onClickProfile}/>
         </div>
       );
@@ -70,7 +69,7 @@ const MenuLayout = () => {
         menuItem = menuItem.concat(loginMenu);
       }
       return (
-        <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={menuItem} />
+        <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={menuItem} style={{ flex: 1, minWidth: 0 }}/>
       );
     }
   }

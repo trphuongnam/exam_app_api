@@ -9,8 +9,8 @@ import { ThunkDispatch } from "@reduxjs/toolkit";
 import { getTestHistoryService } from '../common/services/userService';
 import { historyApi } from '../common/interfaces/userInterface';
 import { tabIndex } from '../common/util/constant';
-import { queryParams, numQuestion, dateFormat } from '../common/util/constant';
-import { convertDate } from '../common/util/functions';
+import { queryParams, numQuestion } from '../common/util/constant';
+import Loading from '../components/loading';
 
 const HistoryTest = ({
   tabId
@@ -22,6 +22,7 @@ const HistoryTest = ({
   const isLogin = useSelector((state: any) => state.login.isLogin);
   const dispatch = useDispatch() as ThunkDispatch<any, any, any>;
   const histories: historyApi[] = useSelector((state: any) => state.user.historyData);
+  const isLoading: boolean = useSelector((state: any) => state.user.isLoading);
   const paginate = useSelector((state: any) => state.user.paginate);
   const page: number = 1;
   
@@ -52,31 +53,31 @@ const HistoryTest = ({
           key={history.id}
         >
           <Row>
-            <Col className="gutter-row" span={6}>
+            <Col className="gutter-row" xs={24} sm={24} md={6}>
               <div>
                 <p className='uppercase font-bold'>{history.ctg_name}</p>
                 <p>{history.ctg_desc}</p>
               </div>
             </Col>
-            <Col className="gutter-row" span={6}>
+            <Col className="gutter-row" xs={12} sm={12} md={6}>
               <div>
                 <p>{history.ctg_start_time}</p>
                 <p>{history.ctg_end_time}</p>
               </div>
             </Col>
-            <Col className="gutter-row" span={2}>
+            <Col className="gutter-row" xs={12} sm={12} md={2}>
               <div>
                 <p>Score:</p>
                 <p>{history.score}/{numQuestion}</p>
               </div>
             </Col>
-            <Col className="gutter-row" span={4}>
+            <Col className="gutter-row" xs={12} sm={12} md={4}>
               <div>
                 <p>Time Test:</p>
                 <p>{history.test_time}</p>
               </div>
             </Col>
-            <Col className="gutter-row" span={6}>
+            <Col className="gutter-row" xs={12} sm={12} md={6}>
               <div className='flex justify-end'><ButtonCustom text={'Retest'} evClick={() => {}}/></div>
             </Col>
           </Row>
@@ -89,7 +90,7 @@ const HistoryTest = ({
   return (
     <>
       <div className='history-wrapper'>
-        {historyItem()}
+        <Loading isLoading={isLoading} content={historyItem()}></Loading>
       </div>
       <Pagination
         defaultCurrent={page}

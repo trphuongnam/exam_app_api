@@ -6,13 +6,14 @@ import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { ThunkDispatch } from "@reduxjs/toolkit";
 import { getUserService } from "../common/services/userService";
-import { Tabs, Spin, Upload } from 'antd';
+import { Tabs, Upload } from 'antd';
 import { UserOutlined, LineChartOutlined, UploadOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import ButtonCustom from "../components/button";
 import CategoryForm from "./categoryForm";
 import QuestionForm from "./questionForm";
 import ListQuestion from "./question";
 import HistoryTest from "./historyTest";
+import Loading from "../components/loading";
 import { importQuestion } from "../common/services/questionService";
 import { openNotification } from "../common/util/notification";
 import { tabIndex } from "../common/util/constant";
@@ -29,9 +30,18 @@ const Top = () => {
   const [fileUpload, setFileUpload] = useState([] as any);
   
   const tabs = [
-    'Info',
-    'Questions',
-    'History'
+    {
+      name: 'Info',
+      role: 'all'
+    },
+    {
+      name: 'Questions',
+      role: 'admin'
+    },
+    {
+      name: 'History',
+      role: 'all'
+    },
   ]
   
   useEffect(() => {
@@ -68,7 +78,7 @@ const Top = () => {
 
   const buttonAction = () => {
     return (
-      <>
+      <div className="profile-buttons">
         <ButtonCustom
           text="Add Category"
           className="mr-3"
@@ -108,25 +118,31 @@ const Top = () => {
           evClick={() => {startImportQuestion()}}
           className={fileUpload.length == 0 ? 'hidden' : 'block mt-3'}
         />
-      </>
+      </div>
     )
   }
 
   const tabWrapper = () => {
-    if (loading) {
-      return (<Spin/>);
-    }
     return (
       <Tabs
         defaultActiveKey={String(tabIndex.info)}
         items={[UserOutlined, QuestionCircleOutlined, LineChartOutlined].map((Icon, i) => {
           const id = String(i + 1);
-          return {
-            key: id,
-            label: tabs[i],
-            children: tabContent(i),
-            icon: <Icon />,
-          };
+          if (!tabs[i].disable) {
+            return {
+              key: id,
+              label: tabs[i].name,
+              children: tabContent(i),
+              icon: <Icon />,
+            };
+          } else {
+            return {
+              key: id,
+              label: '',
+              children: '',
+              icon: '',
+            };
+          }
         })}
       />
     )
@@ -170,7 +186,7 @@ const Top = () => {
 
   return (
     <>
-      {tabWrapper()}
+      <Loading isLoading={loading} content={tabWrapper()}></Loading>
       <CategoryForm
         visible={categoryDialogVisible}
         evCancel={() => {onCancel('category')}}

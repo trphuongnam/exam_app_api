@@ -10,20 +10,20 @@ const HeaderLayout = () => {
   const router = useRouter();
 
   return (
-    <>
-      <Header className="layout-header">
+    <Header className="layout-header">
+      <div className="demo-logo">
         <Link href="/">
           <Image
             width={200}
             src={`/asset/images/QuizGrad.png`}
             preview={false}
-          />  
+          />
         </Link>
-        <HeaderMenu>
-          <MenuLayout></MenuLayout>
-        </HeaderMenu>
-      </Header>
-    </>
+      </div>
+      <HeaderMenu>
+        <MenuLayout></MenuLayout>
+      </HeaderMenu>
+    </Header>
   )
 }
 

@@ -4,7 +4,7 @@ import { useCookies } from "next-client-cookies";
 import { authenticationRouter } from "@/app/common/util/functions/authenticationRouter";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { Spin, Steps, Modal, Result } from "antd";
+import { Spin, Steps, Modal, Result, StepProps } from "antd";
 import ButtonCustom from "../../components/button";
 import { setStartTest } from "@/app/stores/action/question";
 import { SmileOutlined, ClockCircleOutlined } from "@ant-design/icons";
@@ -14,7 +14,7 @@ import { ThunkDispatch } from "@reduxjs/toolkit";
 import { finishTestService } from "@/app/common/services/testService"
 import { testFinish } from "@/app/common/interfaces/testInterface";
 import { questionApi } from "@/app/common/interfaces/questionInterface";
-import { StepProps } from "antd";
+import Loading from "@/app/components/loading";
 
 const Exam = () => {
   const router = useRouter();
@@ -31,12 +31,12 @@ const Exam = () => {
   const [isModalEndTimeOpen, setIsModalEndTimeOpen] = useState(false);
   const [isModalResultOpen, setIsModalResultOpen] = useState(false);
   const [isModalStartOpen, setIsModalStartOpen] = useState(false);
-  const [isModalAnswerSystemOpen, setIsModalAnswerSystemOpen] = useState(false);
   const [answerSelected, setAnswerSelected] = useState([] as answerSelect[]);
   const [selecting, setSelecting] = useState([] as number[]);
   const [timeTest, setTimeTest] = useState(10000);
   const [isStart, setIsStart] = useState(false);
   const [steps, setSteps] = useState([] as StepProps[]);
+  const startText = 'Start the test?';
 
   useEffect(() => {
     if (!authenticationRouter(cookies) && isLogin) {
@@ -191,9 +191,6 @@ const Exam = () => {
           router.push('/top');
         }
         break;
-      case 'answer':
-        setIsModalAnswerSystemOpen(false);
-        break;
     }
   }
 
@@ -257,62 +254,9 @@ const Exam = () => {
     )
   }
 
-  const showAnswerSystem = () => {
-    setIsModalAnswerSystemOpen(true);
-  }
-
-  const answerLink = () => {
-    return (
-      <>
-        <ButtonCustom
-          btnKey={`see_answer`}
-          text={`See answer`}
-          evClick={() => showAnswerSystem()}
-        />
-      </>
-    )
-  }
-
   const multiAnswer = (question: any) => {
     return question.multiple == 'true' ? '(Multiple answer)' : '';
   }
-
-  // const listAnswer = () => {
-  //   return Object.keys(question).map((key, index) => {
-  //     return (
-  //       <div key={question[key].id}>
-  //         <p className="qt_name" key={question[key].id}>{`Q${index + 1}: ${question[key].question} ${multiAnswer(question[key])}`}</p>
-  //         <div className="flex direction-row">
-  //           <div>
-  //             {Object.keys(question[key].answers).map((aKey, i) => {
-  //               if (question[key].answers[aKey]) {
-  //                 return (
-  //                   <p key={i} className={question[key].correct_answers[`${aKey}_correct`] == 'true' ? "ml-10 bg-green-500" : "ml-10"}>{`${i + 1}) ${question[key].answers[aKey]}`}</p>
-  //                 )
-  //               }
-  //             })}
-  //           </div>
-  //           <div>
-  //             {Object.keys(question[key].answers).map((aKey, i) => {
-  //               if (question[key].answers[aKey]) {
-  //                 return (
-  //                   <p
-  //                     key={i}
-  //                     className={
-  //                       answerSelected.find((answer: answerSelect) => answer.qId == question[key].id && answer.answerId.includes(aKey)) ? "ml-10 selected" : "ml-10"
-  //                     }
-  //                   >
-  //                     {`${i + 1}) ${question[key].answers[aKey]}`}
-  //                   </p>
-  //                 )
-  //               }
-  //             })}
-  //           </div>
-  //         </div>
-  //       </div>
-  //     )
-  //   })
-  // }
 
   const questionShow = () => {
     if (isStart) {
@@ -321,7 +265,7 @@ const Exam = () => {
           <div
             className="title_box"
           >
-            <span className="text-3xl">{!loading ? `Q${currentQuestion + 1}: ${question[currentQuestion]?.name} ${multiAnswer(question[currentQuestion])}` : ''}</span>
+            <span className="question_title">{!loading ? `Q${currentQuestion + 1}: ${question[currentQuestion]?.name} ${multiAnswer(question[currentQuestion])}` : ''}</span>
           </div>
           <div
             key={'question_' + currentQuestion}
@@ -333,11 +277,9 @@ const Exam = () => {
       )
     }
   }
-
-  return (
-    <>
-      <h1 className="text-xl text-center p-2">Choose the question</h1>
-      <Spin spinning={loading} fullscreen />
+  
+  const questionArea = () => {
+    return (
       <div
         id="scrollableDiv"
         style={{
@@ -359,7 +301,6 @@ const Exam = () => {
             icon={<SmileOutlined />}
             status="warning"
             title={`Your point is: ${point} / 20`}
-            subTitle={answerLink()}
           />
         </Modal>
         <Modal
@@ -369,13 +310,17 @@ const Exam = () => {
           maskClosable={false}
         >
           <Result
-            title={question.length > 0 ? "Start the test?" : "Questions don't exist. Please select another category!!"}
+            title={startText}
           />
         </Modal>
-        {/* <Modal title={'Result: '} open={isModalAnswerSystemOpen} onOk={() => handleOk('answer')} width={1000}>
-          {listAnswer()}
-        </Modal> */}
       </div>
+    )
+  }
+
+  return (
+    <>
+      <h1 className="text-xl text-center p-2">Choose the question</h1>
+      <Loading isLoading={loading} content={questionArea()} />
       <div className="action_button flex justify-between item-center mt-5">
         <ButtonCustom
           btnKey={`prev`}
