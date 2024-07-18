@@ -123,26 +123,20 @@ const Top = () => {
   }
 
   const tabWrapper = () => {
+    let tabMenu = tabs;
+    if (userData.length > 0 && userData[0].role != 1) {
+      tabMenu = tabs.filter((tab: {name: string, role: string}) => tab.role == 'all')
+    }
     return (
       <Tabs
         defaultActiveKey={String(tabIndex.info)}
-        items={[UserOutlined, QuestionCircleOutlined, LineChartOutlined].map((Icon, i) => {
+        items={tabMenu.map((Icon, i) => {
           const id = String(i + 1);
-          if (!tabs[i].disable) {
-            return {
-              key: id,
-              label: tabs[i].name,
-              children: tabContent(i),
-              icon: <Icon />,
-            };
-          } else {
-            return {
-              key: id,
-              label: '',
-              children: '',
-              icon: '',
-            };
-          }
+          return {
+            key: id,
+            label: tabs[i].name,
+            children: tabContent(i),
+          };
         })}
       />
     )

@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { getUserService, getTestHistoryService } from "@/app/common/services/userService";
-import { historyApi } from "@/app/common/interfaces/userInterface";
+import { historyApi, userApi } from "@/app/common/interfaces/userInterface";
 
 const initialState = {
-  userData: [] as any,
+  userData: [] as userApi[],
   historyData: [] as historyApi[],
   paginate: {
     total: 0,

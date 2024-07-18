@@ -15,3 +15,12 @@ export type historyResponse = {
   total: number,
   totalPage: number
 }
+
+export type userApi = {
+  id: number,
+  name: string,
+  email: string,
+  role: number,
+  age: number,
+  email_verified_at: string | null
+}
