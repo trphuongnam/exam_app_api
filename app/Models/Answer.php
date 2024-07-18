@@ -26,10 +26,10 @@ class Answer extends Model
     ];
 
     public function selections() {
-        $this->hasMany(Selection::class, 'answer_id');
+        return $this->hasMany(Selection::class, 'answer_id');
     }
 
     public function question() {
-        $this->belongsTo(Question::class, 'question_id');
+        return $this->belongsTo(Question::class, 'question_id');
     }
 }
