@@ -166,6 +166,7 @@ export const getDetailCategory = async (categoryId: number) => {
       end_time: "",
       created_at: "",
       updated_at: "",
+      question_count: 0,
   };
   await axiosRequest.get(
     GET_CATEGORY_DETAIL.replace(':catId', String(categoryId)),
@@ -185,6 +186,7 @@ export const getDetailCategory = async (categoryId: number) => {
       end_time: "",
       created_at: "",
       updated_at: "",
+      question_count: 0,
     };
   })
 
