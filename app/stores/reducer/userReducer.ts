@@ -28,7 +28,11 @@ export const userSlice = createSlice({
         state.isLoading = false;
         state.userData = action.payload;
       })
+      .addCase(getTestHistoryService.pending, (state) => {
+        state.isLoading = true;
+      })
       .addCase(getTestHistoryService.fulfilled, (state, action) => {
+        state.isLoading = false;
         state.historyData = action.payload.data;
         state.paginate = {
           total: action.payload.total,

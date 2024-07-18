@@ -42,7 +42,11 @@ export const importQuestion = async (csvFile: FormData) => {
   await axiosRequest.post(
     IMPORT_QUESTION,
     csvFile,
-    {}
+    {
+      headers: {
+        Authorization: getTokenFromCookie()
+      }
+    }
   ).then(({data}) => {
     openNotification('Import Question', data.data.message, 200);
   }).catch(() => {

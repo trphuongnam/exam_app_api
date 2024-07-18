@@ -55,3 +55,48 @@
   }
 }
 
+// Question
+.question_title {
+  font-size: 1.5em;
+}
+
+// Responsive
+@media only screen and (max-width : 480px) {
+  .layout-header {
+    padding: 0 15px;
+  }
+
+  .ant-layout-content {
+    padding: 0 15px;
+  }
+
+  //Home
+  .home_wrapper {
+    flex-direction: column;
+    .content-left {
+      width: 100%;
+      padding: 0;
+    }
+    .content-right {
+      width: 100%;
+    }
+  }
+
+  // Profile
+  // Profile - Info tab
+  .profile-buttons {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  // Test
+  .ant-steps {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    height: fit-content !important;
+  }
+  .question_answer {
+    height: auto !important;
+  }
+}
+

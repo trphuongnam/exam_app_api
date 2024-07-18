@@ -23,8 +23,8 @@ const Home = () => {
   }
 
   return (
-    <WrapContent>
-      <ContentLeft>
+    <WrapContent className="home_wrapper">
+      <ContentLeft className="content-left">
         <p className="title-1 leading-tight mb-7">Learn <br/>new concepts<br/>for each question</p>
         <SlogantText className="leading-tight mb-7 text-1">We help you prepare for exams and quizes </SlogantText>
         <ButtonsAction>
@@ -39,7 +39,7 @@ const Home = () => {
           />
         </ButtonsAction>
       </ContentLeft>
-      <BannerRight>
+      <BannerRight className="content-right">
         <Image
           width={'100%'}
           src={`/asset/images/banner.png`}

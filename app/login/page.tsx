@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Image, Checkbox, Form, Input} from "antd";
+import { Image, Checkbox, Form, Input, Row, Col} from "antd";
 import type { FormProps } from 'antd';
 import ButtonCustom from "@/app/components/button"
 import { LoginData } from "@/app/common/interfaces/loginInterface";
@@ -107,6 +107,7 @@ const Login = () => {
             <ButtonCustom
               text={'Forgot Password?'}
               type="link"
+              evClick={() => {}}
             />
           </div>
         </Form.Item>
@@ -120,6 +121,7 @@ const Login = () => {
           />
           <ButtonCustom
             text={'Signup'}
+            evClick={() => {}}
             isDisabled={isDisabled}
           />
         </Form.Item>
@@ -127,8 +129,8 @@ const Login = () => {
     )
   }
   return (
-    <div className="grid grid-cols-2 gap-2 login-wrap">
-      <div className="grid grid-rows gap-4">
+    <Row>
+      <Col xs={24} sm={24} md={12}>
         <Image
           preview={false}
           src={`/asset/images/logo.png`}
@@ -138,14 +140,14 @@ const Login = () => {
           <p className="text-center text-1">Welcome  back! <br/> Please login/Signup to your account.</p>
         </div>
         <LoginForm/>
-      </div>
-      <div className="grid grid-rows-1">
+      </Col>
+      <Col xs={24} sm={24} md={12}>
         <Image
           preview={false}
           src={`/asset/images/banner_login.png`}
         />
-      </div>
-    </div>
+      </Col>
+    </Row>
   )
 }
 
