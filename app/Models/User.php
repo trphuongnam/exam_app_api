@@ -72,10 +72,10 @@ class User extends Authenticatable implements JWTSubject
     }
 
     public function selection() {
-        $this->hasMany(Selection::class, 'user_id');
+        return $this->hasMany(Selection::class, 'user_id');
     }
 
     public function result() {
-        $this->hasMany(Results::class, 'user_id');
+        return $this->hasMany(Results::class, 'user_id');
     }
 }

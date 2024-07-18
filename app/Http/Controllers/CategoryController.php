@@ -20,11 +20,11 @@ class CategoryController extends Controller
         try {
             $current_page = $request->page;
             $per_page = $request->row;
-            $categories = Category::paginate($per_page);
+            $categories = Category::withCount('question')->paginate($per_page);
             $total_page = ceil($categories->total() / $per_page);
             return $this->respondSuccessPaginate($categories, $current_page, $total_page, $categories->perPage(), $categories->total());
         } catch (\Throwable $th) {
-            //throw $th;
+            throw $th;
             return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
         }
     }
