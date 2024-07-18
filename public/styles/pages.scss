@@ -89,6 +89,10 @@
     flex-wrap: wrap;
   }
 
+  .history-wrapper {
+    overflow: auto;
+  }
+
   // Test
   .ant-steps {
     flex-direction: row !important;
