@@ -1,6 +1,12 @@
 import type { MenuProps } from 'antd';
 export const menus: MenuProps['items'] = [
   {
+    label: 'Top',
+    key: 'top',
+    icon: '',
+    disabled: false
+  },
+  {
     label: 'How it works?',
     key: 'home',
     icon: '',

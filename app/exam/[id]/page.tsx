@@ -27,16 +27,16 @@ const Exam = () => {
   const loading: boolean = useSelector((state: any) => state.question.loading);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [point, setPoint] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalEndTimeOpen, setIsModalEndTimeOpen] = useState(false);
   const [isModalResultOpen, setIsModalResultOpen] = useState(false);
   const [isModalStartOpen, setIsModalStartOpen] = useState(false);
-  const [answerSelected, setAnswerSelected] = useState([] as answerSelect[]);
   const [selecting, setSelecting] = useState([] as number[]);
-  const [timeTest, setTimeTest] = useState(10000);
+  const [timeTest, setTimeTest] = useState('00:00' as string);
+  const [timeLimit, setTimeLimit] = useState(0);
   const [isStart, setIsStart] = useState(false);
   const [steps, setSteps] = useState([] as StepProps[]);
   const startText = 'Start the test?';
+  const [answerSelected] = useState([] as answerSelect[]);
 
   useEffect(() => {
     if (!authenticationRouter(cookies) && isLogin) {
@@ -48,20 +48,6 @@ const Exam = () => {
       setIsModalStartOpen(true)
     }
   }, [])
-
-  useEffect(() => {
-    if (!authenticationRouter(cookies) && isLogin) {
-      router.push('/login');
-    } else {
-      if (isStart) {
-        if (timeTest > 0) {
-          timeOut
-        } else {
-          setIsModalEndTimeOpen(true)
-        }
-      }
-    }
-  }, [timeTest, isStart])
 
   useEffect(() => {
     let step: StepProps[] = []
@@ -164,12 +150,29 @@ const Exam = () => {
     }
   }
 
-  var timeOut = setTimeout(() => {if (timeTest > 0) setTimeTest(timeTest - 1)}, 1000)
+  var timeOut = setInterval(() => {
+    if (timeLimit > 0) {
+      var now = new Date().getTime();
+      var distance = timeLimit - now;
+        
+      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+      const strTime = (minutes < 10 ? '0' + minutes : minutes) + ":" + (seconds < 10 ? '0' + seconds : seconds);
+      setTimeTest(strTime);
+        
+      if (distance < 0) {
+        clearInterval(timeOut);
+        handleFinishTest();
+      }
+    } else {
+      clearInterval(timeOut);
+    }
+  }, 1000)
 
   const handleOk = (type: string) => {
     switch (type) {
       case 'status':
-        setIsModalOpen(false);
         setCurrentQuestion(currentQuestion + 1);
         break;
       case 'time':
@@ -186,6 +189,7 @@ const Exam = () => {
         if (question.length > 0) {
           setIsStart(true);
           dispatch(setStartTest(true));
+          setTimeLimit(new Date().getTime() + 600000);
           timeOut;
         } else {
           router.push('/top');
@@ -199,7 +203,7 @@ const Exam = () => {
   }
 
   const handleFinishTest = async () => {
-    clearTimeout(timeOut);
+    clearInterval(timeOut);
     const categoryId = parseInt(String(params.id));
     const result: testFinish | null = await finishTestService(answerSelected, categoryId);
     if (result) {
@@ -308,6 +312,7 @@ const Exam = () => {
           onOk={() => handleOk('start')}
           onCancel={() => handleCancel()}
           maskClosable={false}
+          okButtonProps={{ disabled: loading, loading: loading }}
         >
           <Result
             title={startText}
