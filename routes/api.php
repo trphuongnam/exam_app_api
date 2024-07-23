@@ -16,6 +16,7 @@ use App\Http\Controllers\AuthController;
 */
 
 Route::post('login', 'App\Http\Controllers\AuthController@login');
+Route::post('signup', 'App\Http\Controllers\AuthController@signup');
 Route::group(['middleware' => 'apiAuth'], function ($router) {
     Route::post('logout', 'App\Http\Controllers\AuthController@logout');
     
