@@ -8,14 +8,14 @@ import { useSelector, useDispatch } from "react-redux";
 import { ThunkDispatch } from "@reduxjs/toolkit";
 import { getTestHistoryService } from '../common/services/userService';
 import { historyApi } from '../common/interfaces/userInterface';
-import { tabIndex } from '../common/util/constant';
+import { tabKeys } from '../common/util/constant';
 import { queryParams, numQuestion } from '../common/util/constant';
 import Loading from '../components/loading';
 
 const HistoryTest = ({
-  tabId
+  tabKey
 }: Readonly<{
-  tabId: number
+  tabKey: string
 }>) => {
   const router = useRouter();
   const cookies = useCookies();
@@ -27,14 +27,14 @@ const HistoryTest = ({
   const page: number = 1;
   
   useEffect(() => {
-    if (tabId == tabIndex.history) {
+    if (tabKey == tabKeys.history) {
       if (!authenticationRouter(cookies) && isLogin) {
         router.push('/login');
       } else {
         getHistories(page);
       }
     }
-  }, [tabId])
+  }, [tabKey])
 
   const getHistories = (page: number) => {
     queryParams.page = page;

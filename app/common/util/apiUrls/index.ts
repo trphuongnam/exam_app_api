@@ -1,6 +1,7 @@
 // Auth
 export const LOGIN = '/login'
 export const LOGOUT = '/logout'
+export const SIGNUP = '/signup'
 
 // User
 export const GET_USER = '/user'

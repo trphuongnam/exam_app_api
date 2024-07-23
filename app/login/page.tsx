@@ -1,27 +1,18 @@
 "use client"
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useDispatch, useSelector } from 'react-redux'
-
-import { Image, Checkbox, Form, Input, Row, Col} from "antd";
-import type { FormProps } from 'antd';
+import { useSelector } from 'react-redux'
+import { Image,Row, Col} from "antd";
+import SignupForm from "./signupForm";
+import SigninForm from "./siginForm";
 import ButtonCustom from "@/app/components/button"
-import { LoginData } from "@/app/common/interfaces/loginInterface";
-import { loginAction, tokenAction } from "../stores/action/login";
-import { loginService } from "@/app/common/services/authService"
+import { formType } from "@/app/common/util/constant";
 
 const Login = () => {
   const router = useRouter();
-  const dispatch = useDispatch();
   const isLogin = useSelector((state: any) => state.login.isLogin);
   const token = useSelector((state: any) => state.login.token);
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [remember, setRemember] = useState(true);
-  const [isDisabled, setIsDisabled] = useState(false);
-  const inputEmailRef = useRef(null as any);
-  const inputPasswordRef = useRef(null as any);
+  const [ visibleForm, setVisibleForm ] = useState(formType.SIGNIN as string);
 
   useEffect(() => {
     if (token && isLogin) {
@@ -31,102 +22,17 @@ const Login = () => {
     }
   }, [token, isLogin])
 
-  const onFinish: FormProps<LoginData>['onFinish'] = (values) => {
-    setIsDisabled(false);
-  };
-  
-  const onFinishFailed: FormProps<LoginData>['onFinishFailed'] = (errorInfo) => {
-    setIsDisabled(false);
-  };
-
-  const handleSubmit = async () => {
-    setIsDisabled(true);
-    const inputEmail = inputEmailRef.current ? inputEmailRef.current.input.value : '';
-    const inputPassword = inputPasswordRef.current ? inputPasswordRef.current.input.value : '';
-
-    setEmail(inputEmail);
-    setPassword(inputPassword);
-
-    const data: LoginData = {
-      'email': inputEmail,
-      'password': inputPassword,
-      'remember': remember
+  const AuthForm = () => {
+    switch (visibleForm) {
+      case formType.SIGNUP:
+        return (
+          <SignupForm/>
+        );
+      default:
+        return (
+          <SigninForm/>
+        );
     }
-    const result = await loginService(data);
-    if (result) {
-      dispatch(loginAction(result['success']));
-      dispatch(tokenAction(result['token']));
-      document.cookie = `token=${result['token']}`;
-      router.push('/top');
-    }
-    setIsDisabled(false);
-  }
-
-  const LoginForm = () => {
-    return (
-      <Form
-        name="basic"
-        labelCol={{ span: 8 }}
-        wrapperCol={{ span: 24 }}
-        style={{ maxWidth: 600, fontSize: 17 }}
-        initialValues={{ remember: true }}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-        autoComplete="off"
-        layout={'vertical'}
-        className="login-form"
-      >
-        <Form.Item<LoginData>
-          label="Email"
-          name="email"
-          rules={[{ required: true, message: 'Please input your username!' }]}
-        >
-          <Input
-            value={email}
-            ref={inputEmailRef}
-          />
-        </Form.Item>
-
-        <Form.Item<LoginData>
-          label="Password"
-          name="password"
-          rules={[{ required: true, message: 'Please input your password!' }]}
-        >
-          <Input.Password value={password} ref={inputPasswordRef}/>
-        </Form.Item>
-
-        <Form.Item<LoginData>
-          name="remember"
-          valuePropName="checked"
-          wrapperCol={{ offset: 0, span: 24 }}
-        >
-          <div>
-            <Checkbox checked={remember} onChange={(ev: any) => {
-              setRemember(ev.target.value)
-              }}>Remember me</Checkbox>
-            <ButtonCustom
-              text={'Forgot Password?'}
-              type="link"
-              evClick={() => {}}
-            />
-          </div>
-        </Form.Item>
-
-        <Form.Item wrapperCol={{ offset: 0, span: 16 }}>
-          <ButtonCustom
-            text={'Login'}
-            className='mr-8'
-            evClick={handleSubmit}
-            isLoading={isDisabled}
-          />
-          <ButtonCustom
-            text={'Signup'}
-            evClick={() => {}}
-            isDisabled={isDisabled}
-          />
-        </Form.Item>
-      </Form>
-    )
   }
   return (
     <Row>
@@ -139,7 +45,13 @@ const Login = () => {
         <div>
           <p className="text-center text-1">Welcome  back! <br/> Please login/Signup to your account.</p>
         </div>
-        <LoginForm/>
+        <AuthForm/>
+        
+        <ButtonCustom
+          text={visibleForm == formType.SIGNIN ? 'Register now' : 'Login now'}
+          type="link"
+          evClick={() => {setVisibleForm(visibleForm == formType.SIGNIN ? formType.SIGNUP : formType.SIGNIN) }}
+        />
       </Col>
       <Col xs={24} sm={24} md={12}>
         <Image

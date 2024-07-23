@@ -1,7 +1,12 @@
-export const tabIndex = {
-  info: 0,
-  question: 1,
-  history: 2
+export const tabKeys = {
+  info: 'info',
+  question: 'question',
+  history: 'history'
+}
+
+export const memberRole = {
+  admin: 1,
+  user: 0
 }
 
 export const dateFormat = {
@@ -15,3 +20,8 @@ export const queryParams = {
 }
 
 export const numQuestion = 20
+
+export const formType = {
+  SIGNIN: 'signin',
+  SIGNUP: 'signup'
+}
