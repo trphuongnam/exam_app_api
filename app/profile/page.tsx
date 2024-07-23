@@ -16,7 +16,7 @@ import HistoryTest from "./historyTest";
 import Loading from "../components/loading";
 import { importQuestion } from "../common/services/questionService";
 import { openNotification } from "../common/util/notification";
-import { tabIndex } from "../common/util/constant";
+import { tabKeys, memberRole } from "../common/util/constant";
 
 const Top = () => {
   const router = useRouter();
@@ -32,15 +32,18 @@ const Top = () => {
   const tabs = [
     {
       name: 'Info',
-      role: 'all'
+      key: tabKeys.info,
+      role: memberRole.user
     },
     {
       name: 'Questions',
-      role: 'admin'
+      key: tabKeys.question,
+      role: memberRole.admin
     },
     {
       name: 'History',
-      role: 'all'
+      key: tabKeys.history,
+      role: memberRole.user
     },
   ]
   
@@ -52,94 +55,100 @@ const Top = () => {
     }
   }, [])
 
-  const tabContent = (index: number) => {
-    switch (index) {
-      case tabIndex.info:
+  const tabContent = (key: string) => {
+    switch (key) {
+      case tabKeys.info:
         if (userData.length > 0 ) {
           return (
             <>
               <div className="mb-8">
                 <p><span className="font-semibold min-w-12 w-12 inline-block">Name: </span>{userData[0].name}</p>
                 <p><span className="font-semibold min-w-12 w-12 inline-block">Email: </span>{userData[0].email}</p>
-                <p><span className="font-semibold min-w-12 w-12 inline-block">Role: </span>{userData[0].role ? 'Admin' : 'Member'}</p>
+                <p><span className="font-semibold min-w-12 w-12 inline-block">Role: </span>{userData[0].role == memberRole.admin ? 'Admin' : 'Member'}</p>
               </div>
               {buttonAction()}
             </>
           )
         }
-      case tabIndex.question:
-        return (<ListQuestion tabId={tabIndex.question}/>)
-      case tabIndex.history:
-        return (<HistoryTest tabId={tabIndex.history}/>)
+      case tabKeys.question:
+        return (<ListQuestion tabKey={tabKeys.question}/>)
+      case tabKeys.history:
+        return (<HistoryTest tabKey={tabKeys.history}/>)
       default:
         break;
     }
   }
 
   const buttonAction = () => {
-    return (
-      <div className="profile-buttons">
-        <ButtonCustom
-          text="Add Category"
-          className="mr-3"
-          evClick={() => {setCategoryDialogVisible(true)}}
-        />
-        {/* <Upload {...props}>
+    if (userData.length > 0 && userData.role == memberRole.admin) {
+      return (
+        <div className="profile-buttons">
           <ButtonCustom
-            text="Import Category"
-            icon={<UploadOutlined/>}
-          />
-        </Upload> */}
-
-        <ButtonCustom
-          text="Add Question"
-          className="mr-3"
-          evClick={() => {setQuestionDialogVisible(true)}}
-        />
-        <Upload
-          accept=".xlsx"
-          maxCount={1}
-          onChange={onImportQuestion}
-          listType="picture"
-          className="upload-list-inline"
-          defaultFileList={[...fileUpload]}
-          onRemove={removeFile}
-        >
-          <ButtonCustom
-            text="Import Question"
-            icon={<UploadOutlined/>}
-            evClick={() => {}}
+            text="Add Category"
             className="mr-3"
+            evClick={() => {setCategoryDialogVisible(true)}}
           />
-        </Upload>
-        <ButtonCustom
-          text="Push"
-          icon={<UploadOutlined/>}
-          evClick={() => {startImportQuestion()}}
-          className={fileUpload.length == 0 ? 'hidden' : 'block mt-3'}
-        />
-      </div>
-    )
+          {/* <Upload {...props}>
+            <ButtonCustom
+              text="Import Category"
+              icon={<UploadOutlined/>}
+            />
+          </Upload> */}
+  
+          <ButtonCustom
+            text="Add Question"
+            className="mr-3"
+            evClick={() => {setQuestionDialogVisible(true)}}
+          />
+          <Upload
+            accept=".xlsx"
+            maxCount={1}
+            onChange={onImportQuestion}
+            listType="picture"
+            className="upload-list-inline"
+            defaultFileList={[...fileUpload]}
+            onRemove={removeFile}
+          >
+            <ButtonCustom
+              text="Import Question"
+              icon={<UploadOutlined/>}
+              evClick={() => {}}
+              className="mr-3"
+            />
+          </Upload>
+          <ButtonCustom
+            text="Push"
+            icon={<UploadOutlined/>}
+            evClick={() => {startImportQuestion()}}
+            className={fileUpload.length == 0 ? 'hidden' : 'block mt-3'}
+          />
+        </div>
+      )
+    }
   }
 
   const tabWrapper = () => {
-    let tabMenu = tabs;
-    if (userData.length > 0 && userData[0].role != 1) {
-      tabMenu = tabs.filter((tab: {name: string, role: string}) => tab.role == 'all')
+    if (userData.length > 0) {
+      let tabMenu = tabs;
+      if (userData[0].role != memberRole.admin) {
+        tabMenu = tabMenu.filter((tab: {name: string, role: number}) => tab.role == memberRole.user)
+      }
+      return (
+        <>
+          <Tabs
+            defaultActiveKey={String(tabKeys.info)}
+            items={[...tabMenu].map((Icon, i) => {
+              const id = String(i + 1);
+              return {
+                key: id,
+                label: tabMenu[i].name,
+                children: tabContent(tabMenu[i].key),
+              };
+            })}
+          />
+        </>
+      )
     }
-    return (
-      <Tabs
-        defaultActiveKey={String(tabIndex.info)}
-        items={tabMenu.map((Icon, i) => {
-          const id = String(i + 1);
-          return {
-            key: id,
-            label: tabs[i].name,
-            children: tabContent(i),
-          };
-        })}
-      />
-    )
   }
 
   const onImportQuestion = (fileInfo: any) => {

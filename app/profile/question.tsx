@@ -6,16 +6,16 @@ import { useRouter } from "next/navigation";
 import { useCookies } from "next-client-cookies";
 import { authenticationRouter } from "@/app/common/util/functions/authenticationRouter";
 import { getCategoryTreeService, getQuestionTreeService } from "../common/services/categoryService";
-import { tabIndex } from '../common/util/constant';
+import { tabKeys } from '../common/util/constant';
 import { categoryTree } from '../common/interfaces/categoryInterface';
 import QuestionEditForm from './questionEditForm';
 import CategoryEditForm from './categoryEditForm';
 import Loading from '../components/loading';
 
 const ListQuestion = ({
-  tabId
+  tabKey
 }: Readonly<{
-  tabId: number
+  tabKey: string
 }>) => {
   const cookies = useCookies();
   const router = useRouter();
@@ -25,7 +25,7 @@ const ListQuestion = ({
   const [ loading, setLoading ] = useState(false as boolean);
 
   useEffect(() => {
-    if (tabId == tabIndex.question) {
+    if (tabKey == tabKeys.question) {
       setNodeSelected({});
       if (!authenticationRouter(cookies) && isLogin) {
         router.push('/login');
@@ -34,7 +34,7 @@ const ListQuestion = ({
         getCategories();
       }
     }
-  }, [tabId])
+  }, [tabKey])
 
   const getCategories = async () => {
     const categoriesData = await getCategoryTreeService();
