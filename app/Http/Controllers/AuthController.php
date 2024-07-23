@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Services\AuthService;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\ResponseTrait;
+use App\Http\Requests\SignupRequest;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -58,7 +61,21 @@ class AuthController extends Controller
         return $token;
     }
 
-    public function hello() {
-        echo "////////";
+    public function signup(SignupRequest $signup) {
+        try {
+            $user = new User();
+            $user->name = $signup->name;
+            $user->email = $signup->email;
+            $user->password = Hash::make($signup->password);
+            $user->age = $signup->age;
+            $user->role = 2;
+            $user->save();
+            return $this->respondSuccess([
+                'message' => 'Signup success'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+            return $this->respondError(500, 'Error when create user');
+        }
     }
 }
