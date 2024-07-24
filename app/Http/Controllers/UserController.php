@@ -6,6 +6,7 @@ use App\Models\Results;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Traits\ResponseTrait;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class UserController extends Controller
 {
@@ -119,5 +120,22 @@ class UserController extends Controller
         
         $total_page = ceil($results->total() / $per_page);
         return $this->respondSuccessPaginate($results, $current_page, $total_page, $results->perPage(), $results->total());
+    }
+
+    public function exportCertificate() {
+        try {
+            $users = User::where('id', auth()->payload()->get('sub'))->get();
+
+            $background = 'data:image/' . pathinfo(asset('storage/images/bg.jpg'), PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents(asset('storage/images/bg.jpg')));
+            $lines = 'data:image/' . pathinfo(asset('storage/images/line.png'), PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents(asset('storage/images/line.png')));
+            $stamp = 'data:image/' . pathinfo(asset('storage/images/stamp.png'), PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents(asset('storage/images/stamp.png')));
+
+            $pdf = Pdf::loadView('pdf.certificate', compact('users', 'background', 'lines', 'stamp'))->setOptions(['defaultFont' => 'sans-serif']);
+            $pdf->save(public_path('sample.pdf'));
+            return $pdf->download('certificate.pdf');
+        } catch (\Throwable $th) {
+            throw $th;
+            return $this->respondError(500, 'Download Fail');
+        }
     }
 }
