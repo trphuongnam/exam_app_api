@@ -1,22 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Certification</title>
-  <style>
+  <style type="text/css">
+    @font-face {
+        font-family: 'NotoSansJP';
+        src: url('assets/fonts/NotoSansJP-VariableFont_wght.ttf') format('truetype');
+        font-weight: bold;
+        font-style: normal;
+    }
+    @page { margin: 1px; }
     body {
       height: 100vh;
-      margin: 0;
-      display: grid;
+      margin: 0px;
+      padding: 0px;
       place-items: center;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: "NotoSansJP", sans-serif;
     }
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
     .module-border-wrap {
-      width: 800px;
-      height: 1200px;
-      padding: 1rem;
+      width: 100%;
+      height: 100%;
+      padding: 0px;
       position: relative;
     }
 
@@ -42,9 +49,9 @@
 
     .content {
       position: absolute;
-      top: 50%;
+      top: 70%;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -70%);
       max-width: 650px;
       width: 650px;
       z-index: 999;
@@ -124,24 +131,21 @@
     }
 
     .footer {
-        margin-top: 30px;
         font-size: 18px;
         color: #000;
         position: relative;
+        border: 1px solid red;
     }
 
-    .footer .seal {
+    .seal {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
-      z-index: 999;
-      top: -30%;
-      left: 70%;
-      transform: translate(-50%, -50%);
+      z-index: 1;
+      left: 50%;
+      transform: translate(100%, -100%);
     }
 
-    .footer .seal img {
-        width: 100px;
+    .seal img {
+        width: 70px;
     }
 
     .font-16 {
@@ -157,12 +161,64 @@
     }
   </style>
 </head>
-<body>
-  <div class="module-border-wrap">
-    <div
+<body style="font-family: 'Noto Sans JP', sans-serif;">
+  <div class="module-border-wrap" style="background-size: 100%; background-repeat: no-repeat;">
+    <table class="content">
+      <tr>
+        <td colspan="4"><h3>Java レベル6</h3></td>
+      </tr>
+      <tr>
+        <td colspan="4"><h1>合格証書</h1></td>
+      </tr>
+      <tr>
+        <td colspan="4"><div class="border_title" ></div></td>
+      </tr>
+      <tr>
+        <td colspan="4"><p>THIS CERTIFICATE IS PROUDLY PRESENTED TO</p></td>
+      </tr>
+      <tr>
+        <td colspan="4"><h2>プロ検 太郎</h2></td>
+      </tr>
+      <tr>
+        <td colspan="4"><p>
+          当協会主催 プログラミング能力検定 2020年2月検定において<br>
+          頭書のレベルに合格したことを証明します。
+          {{storage_path()}}
+        </p></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td style="text-align: left">受験日：</td>
+        <td style="text-align: left">2020年2月14日</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td style="text-align: left">資格発行日：</td>
+        <td style="text-align: left">2020年3月1日</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td colspan="4"><p class="font-16">証書番号：20200214_2593_00000_JP</p></td>
+      </tr>
+      <tr>
+        {{-- <td colspan="3">
+          <h2>プログラミング能力検定協会</h2>
+        </td> --}}
+        <td colspan="4">
+          <div class="footer">
+            <h2>プログラミング能力検定協会</h2>
+              <div class="seal">
+                
+              </div>
+          </div>
+        </td>
+      </tr>
+    </table>
+    {{-- <div
       class="module"
       style="
-        background: url('{{asset('storage/images/bg.jpg')}}');
+        background-image: url('{{$background}}');
         background-size: 100%;
         background-repeat: no-repeat;
       "
@@ -175,7 +231,7 @@
             </div>
             <div class="title">
                 <h1>合格証書</h1>
-                <div class="border_title" style="background-image: url('{{asset('storage/images/line.png')}}');"></div>
+                <div class="border_title" style="background-image: url('{{$lines}}');"></div>
                 <p>THIS CERTIFICATE IS PROUDLY PRESENTED TO</p>
                 <h2>プロ検 太郎</h2>
             </div>
@@ -197,13 +253,13 @@
             <div class="footer">
                 <h2>プログラミング能力検定協会</h2>
                 <div class="seal">
-                  <img src="{{asset('storage/images/stamp.png')}}" alt="Seal">
+                  <img src="{{$stamp}}" alt="Seal">
                 </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </div> --}}
   </div>
 </body>
 </html>

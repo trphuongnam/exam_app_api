@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Traits\ResponseTrait;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -126,11 +127,13 @@ class UserController extends Controller
         try {
             $users = User::where('id', auth()->payload()->get('sub'))->get();
 
-            $background = 'data:image/' . pathinfo(asset('storage/images/bg.jpg'), PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents(asset('storage/images/bg.jpg')));
-            $lines = 'data:image/' . pathinfo(asset('storage/images/line.png'), PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents(asset('storage/images/line.png')));
-            $stamp = 'data:image/' . pathinfo(asset('storage/images/stamp.png'), PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents(asset('storage/images/stamp.png')));
+            $background = 'data:image/jpg' . ';base64,' . base64_encode(Storage::get('public/images/bg.jpg'));
+            $lines = 'data:image/png' . ';base64,' . base64_encode(Storage::get('public/images/line.png'));
+            $stamp = 'data:image/png' . ';base64,' . base64_encode(Storage::get('public/images/stamp.png'));
 
-            $pdf = Pdf::loadView('pdf.certificate', compact('users', 'background', 'lines', 'stamp'))->setOptions(['defaultFont' => 'sans-serif']);
+            $pdf = Pdf::loadView('pdf.certificate', compact('users', 'background', 'lines', 'stamp'))->setOptions([
+                'defaultFont' => 'NotoSansJP',
+            ]);
             $pdf->save(public_path('sample.pdf'));
             return $pdf->download('certificate.pdf');
         } catch (\Throwable $th) {
