@@ -14,5 +14,5 @@ use App\Http\Controllers\AuthController;
 |
 */
 Route::get('/', function () {
-  return view('welcome');
+  return view('pdf.certificate_ui');
 });

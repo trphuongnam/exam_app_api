@@ -6,6 +6,8 @@ use App\Models\Results;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Traits\ResponseTrait;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -119,5 +121,24 @@ class UserController extends Controller
         
         $total_page = ceil($results->total() / $per_page);
         return $this->respondSuccessPaginate($results, $current_page, $total_page, $results->perPage(), $results->total());
+    }
+
+    public function exportCertificate() {
+        try {
+            $users = User::where('id', auth()->payload()->get('sub'))->get();
+
+            $background = 'data:image/jpg' . ';base64,' . base64_encode(Storage::get('public/images/bg.jpg'));
+            $lines = 'data:image/png' . ';base64,' . base64_encode(Storage::get('public/images/line.png'));
+            $stamp = 'data:image/png' . ';base64,' . base64_encode(Storage::get('public/images/stamp.png'));
+
+            $pdf = Pdf::loadView('pdf.certificate', compact('users', 'background', 'lines', 'stamp'))->setOptions([
+                'defaultFont' => 'NotoSansJP',
+            ]);
+            $pdf->save(public_path('sample.pdf'));
+            return $pdf->download('certificate.pdf');
+        } catch (\Throwable $th) {
+            throw $th;
+            return $this->respondError(500, 'Download Fail');
+        }
     }
 }
