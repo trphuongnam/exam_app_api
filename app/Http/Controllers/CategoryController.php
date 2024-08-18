@@ -80,7 +80,7 @@ class CategoryController extends Controller
             array_push($result, [
                 'id' => $value['id'],
                 'title' => $value['name'],
-                'key' => $value['id'],
+                'key' => 'question_'.$value['id'],
                 'isLeaf' => true,
             ]);
         }
@@ -167,7 +167,7 @@ class CategoryController extends Controller
                 $item = [
                     'id' => $value['id'],
                     'title' => $value['name'],
-                    'key' => $value['id'],
+                    'key' => "category_".$value['id'],
                     'isLeaf' => false,
                     'children' => [],
                 ];

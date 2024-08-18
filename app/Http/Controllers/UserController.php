@@ -134,8 +134,14 @@ class UserController extends Controller
             $pdf = Pdf::loadView('pdf.certificate', compact('users', 'background', 'lines', 'stamp'))->setOptions([
                 'defaultFont' => 'NotoSansJP',
             ]);
-            $pdf->save(public_path('sample.pdf'));
-            return $pdf->download('certificate.pdf');
+            $save_file = $pdf->save(public_path('sample.pdf'));
+            $files = $pdf->download('certificate.pdf');
+            if ($save_file) {
+                $pdf_file = chunk_split(base64_encode(file_get_contents(public_path('sample.pdf'))));
+                return $this->respondSuccess($files);
+            } else {
+                return $this->respondError(500, 'Download Fail');
+            }
         } catch (\Throwable $th) {
             throw $th;
             return $this->respondError(500, 'Download Fail');
