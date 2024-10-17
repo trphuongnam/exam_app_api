@@ -123,6 +123,33 @@ class UserController extends Controller
         return $this->respondSuccessPaginate($results, $current_page, $total_page, $results->perPage(), $results->total());
     }
 
+    public function getAllTestHistory(Request $request) {
+        $current_page = $request->page ? $request->page : 1;
+        $per_page = $request->row ? $request->row : 10;
+        $results = Results::join('categories as ctg', 'results.category_id', '=', 'ctg.id')
+                ->join('users as u', 'results.user_id', '=', 'u.id')  
+                // ->where('results.user_id', '=', auth()->payload()->get('sub'))
+                ->select(
+                    'results.id',
+                    'u.name as user_name',   
+                    'results.score',         
+                    'results.created_at as test_time', 
+                    'ctg.name as ctg_name',  
+                    'ctg.start_time',        
+                    'ctg.end_time'           
+                )
+                ->paginate($per_page);
+        $total_page = ceil($results->total() / $per_page);
+        return response()->json([
+            'results' => $results,
+            'current_page' => $current_page,
+            'total_page' => $total_page,
+            'per_page' => $results->perPage(),
+            'total' => $results->total()
+        ]);
+    }
+    
+
     public function exportCertificate() {
         try {
             $users = User::where('id', auth()->payload()->get('sub'))->get();
