@@ -103,8 +103,8 @@ class CategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
    
-    return $this->respondSuccess($questions);
-    }
+
+
      
     public function show($categoryId)
     {
