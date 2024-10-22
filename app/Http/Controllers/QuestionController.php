@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Answer;
+use App\Models\Results;
 use Illuminate\Http\Request;
 use App\Models\Question;
+use App\Models\Answer;
 use App\Traits\ResponseTrait;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Importer;
 
 class QuestionController extends Controller
@@ -73,7 +77,22 @@ class QuestionController extends Controller
                         ->get();
         return $this->respondSuccess($question);
     }
+    public function showQS(Request $request)
+    {
 
+        $question = Question::with([
+            'answer' => function ($query) {
+                $query->select('id', 'name', 'question_id', 'key', 'correct');
+            },
+            'category' => function ($query) {
+                $query->select('id', 'name'); 
+            }
+        ])->get();
+        return $this->respondSuccess($question);
+    }
+
+
+    
     /**
      * Update the specified resource in storage.
      *

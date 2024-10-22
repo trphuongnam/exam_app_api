@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Traits\ResponseTrait;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -39,10 +41,52 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        //
+    public function create(Request $request)
+{
+    DB::beginTransaction();
+
+    try {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed', 
+            'age' => 'nullable|integer', 
+        ]);
+
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->age = $request->age; 
+        $user->password = Hash::make($request->password); 
+        $user->role = 2;
+        $user->save();
+        DB::commit();
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'message' => 'Người dùng đã được tạo thành công',
+                'user' => $user 
+            ],
+            'res' => [
+                'status' => '201'
+            ]
+        ]);
+    } catch (\Throwable $th) {
+        DB::rollBack();
+        return response()->json([
+            'success' => false,
+            'data' => [
+                'code' => 500,
+                'message' => 'Có lỗi xảy ra khi tạo người dùng!'
+            ],
+            'res' => [
+                'status' => '500',
+                'error' => $th->getMessage() 
+            ]
+        ]);
     }
+}
+
 
     /**
      * Store a newly created resource in storage.
@@ -61,10 +105,13 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
-        //
-    }
+    public function show(Request $request)
+{
+    $users = User::all();
+
+    return response()->json($users);
+}
+
 
     /**
      * Show the form for editing the specified resource.
@@ -85,9 +132,26 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {
-        //
+{
+    DB::beginTransaction();
+    try {
+        $user = User::find($id);
+        if ($user) {
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->age = $request->age;
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+            }
+            $user->save();
+        }
+        DB::commit();
+        return $this->respondSuccess(['message' => 'Update user success']);
+    } catch (\Throwable $th) {
+        DB::rollBack();
+        return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
     }
+}
 
     /**
      * Remove the specified resource from storage.
@@ -95,11 +159,56 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        //
+        DB::beginTransaction();
+        
+        try {
+            $user = User::find($id);
+            if ($user) {
+                DB::table('results')->where('user_id', $user->id)->delete();
+                $user->delete();
+                DB::commit();
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'message' => 'Đã Xóa Người Dùng Thành Công'
+                    ],
+                    'res' => [
+                        'status' => '200'
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'data' => [
+                        'code' => 404,
+                        'message' => 'Người Dùng Không Tồn Tại!'
+                    ],
+                    'res' => [
+                        'status' => '404'
+                    ]
+                ]);
+            }
+        } catch (\Throwable $th) {
+       
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'data' => [
+                    'code' => 500,
+                    'message' => 'Có lỗi xảy ra khi xóa người dùng!'
+                ],
+                'res' => [
+                    'status' => '500',
+                    'error' => $th->getMessage()  
+                ]
+            ]);
+        }
     }
+    
 
+    
     public function getTestHistory(Request $request) {
         $current_page = $request->page ? $request->page : 1;
         $per_page = $request->row ? $request->row : 10;

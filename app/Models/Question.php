@@ -20,7 +20,7 @@ class Question extends Model
         'name',
         'description',
         'category_id',
-        'multiple',
+        'multiple',     
         'created_at',
         'updated_at',
     ];

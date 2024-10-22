@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Results;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Question;
 use App\Traits\ResponseTrait;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class CategoryController extends Controller
 {
@@ -97,10 +102,20 @@ class CategoryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+   
+    return $this->respondSuccess($questions);
+    }
+     
     public function show($categoryId)
     {
         $category = Category::where('id', $categoryId)->get();
         return $this->respondSuccess($category);
+    }
+
+    public function showCTG(Request $request)
+    {
+        $category = Category::all();
+        return response()->json($category);
     }
 
     /**

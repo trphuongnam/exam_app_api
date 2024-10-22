@@ -24,30 +24,38 @@ class AuthController extends Controller
             $email = $request->email;
             $password = $request->password;
             $user = $this->auth_service->handleLogin($email, $password);
-
             if ($user) {
-                $jsonToken = $this->createAccessToken();
+                $user->setHidden(['password']);
+                $jsonToken = $this->createAccessToken(); 
                 return $this->respondSuccess([
                     'success' => true,
+                    'role' => $user->role, 
                     'access_token' => $jsonToken,
                     'message' => 'Login success',
-                    'status' => 200
+                    'status' => 200,
+                    'user' => $user
                 ]);
             }
-
             return $this->respondError(401, 'User Not Found', ['status' => 401]);
         } catch (\Throwable $th) {
-            // throw $th;
-            return $this->respondError(500, $th, ['status' => 500]);
+            return $this->respondError(500, 'Internal Server Error', ['status' => 500, 'error' => $th->getMessage()]);
         }
-        
     }
+    
 
     public function logout() {
         auth()->logout(true);
         return response()->json([
             'success' => true,
             'msg' => '' 
+        ]);
+    }
+    public function getProfile(){
+        $userId = auth()->payload()->get('sub');
+        $user = User::where('id',$userId)->get();
+        // $user->setHidden(['password']);
+        return $this->respondSuccess([
+            'user' => $user[0]
         ]);
     }
 
@@ -64,9 +72,9 @@ class AuthController extends Controller
     public function signup(SignupRequest $signup) {
         try {
             $user = new User();
-            $user->name = $signup->name;
-            $user->email = $signup->email;
-            $user->password = Hash::make($signup->password);
+            $user->name = trim($signup->name, '"');
+            $user->email = trim($signup->email, '"');
+            $user->password = Hash::make(trim($signup->password, '"'));
             $user->age = $signup->age;
             $user->role = 2;
             $user->save();
