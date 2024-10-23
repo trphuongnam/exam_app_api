@@ -15,43 +15,56 @@ class AuthController extends Controller
     use ResponseTrait;
     public $auth_service;
 
-    public function __construct(AuthService $authService) {
+    public function __construct(AuthService $authService)
+    {
         $this->auth_service = $authService;
     }
 
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         try {
             $email = $request->email;
             $password = $request->password;
             $user = $this->auth_service->handleLogin($email, $password);
-
             if ($user) {
+                $user->setHidden(['password']);
                 $jsonToken = $this->createAccessToken();
                 return $this->respondSuccess([
                     'success' => true,
+                    'role' => $user->role,
                     'access_token' => $jsonToken,
                     'message' => 'Login success',
-                    'status' => 200
+                    'status' => 200,
+                    'user' => $user
                 ]);
             }
-
             return $this->respondError(401, 'User Not Found', ['status' => 401]);
         } catch (\Throwable $th) {
-            // throw $th;
-            return $this->respondError(500, $th, ['status' => 500]);
+            return $this->respondError(500, 'Internal Server Error', ['status' => 500, 'error' => $th->getMessage()]);
         }
-        
     }
 
-    public function logout() {
+
+    public function logout()
+    {
         auth()->logout(true);
         return response()->json([
             'success' => true,
-            'msg' => '' 
+            'msg' => ''
+        ]);
+    }
+    public function getProfile()
+    {
+        $userId = auth()->payload()->get('sub');
+        $user = User::where('id', $userId)->get();
+        // $user->setHidden(['password']);
+        return $this->respondSuccess([
+            'user' => $user[0]
         ]);
     }
 
-    private function createAccessToken() {
+    private function createAccessToken()
+    {
         $credentials = request(['email', 'password']);
         $token = auth()->attempt($credentials);
 
@@ -61,12 +74,13 @@ class AuthController extends Controller
         return $token;
     }
 
-    public function signup(SignupRequest $signup) {
+    public function signup(SignupRequest $signup)
+    {
         try {
             $user = new User();
-            $user->name = $signup->name;
-            $user->email = $signup->email;
-            $user->password = Hash::make($signup->password);
+            $user->name = trim($signup->name, '"');
+            $user->email = trim($signup->email, '"');
+            $user->password = Hash::make(trim($signup->password, '"'));
             $user->age = $signup->age;
             $user->role = 2;
             $user->save();

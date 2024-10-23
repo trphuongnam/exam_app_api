@@ -18,11 +18,16 @@ use App\Http\Controllers\AuthController;
 Route::post('login', 'App\Http\Controllers\AuthController@login');
 Route::post('signup', 'App\Http\Controllers\AuthController@signup');
 Route::group(['middleware' => 'apiAuth'], function ($router) {
+    Route::get('auth/me', 'App\Http\Controllers\AuthController@getProfile');
     Route::post('logout', 'App\Http\Controllers\AuthController@logout');
-    
+
     // User route
     Route::group(['prefix' => 'user'], function ($router) {
         Route::get('/', 'App\Http\Controllers\UserController@index');
+        Route::get('/show', 'App\Http\Controllers\UserController@show');
+        Route::post('/create', 'App\Http\Controllers\UserController@create');
+        Route::post('/update/{id}', 'App\Http\Controllers\UserController@update');
+        Route::post('/destroy/{id}', 'App\Http\Controllers\UserController@destroy');
         Route::get('/history', 'App\Http\Controllers\UserController@getTestHistory');
         Route::get('/allhistory', 'App\Http\Controllers\UserController@getAllTestHistory');
         Route::get('/certificate', 'App\Http\Controllers\UserController@exportCertificate');
@@ -31,6 +36,9 @@ Route::group(['middleware' => 'apiAuth'], function ($router) {
     // Category route
     Route::group(['prefix' => 'category'], function ($router) {
         Route::get('/', 'App\Http\Controllers\CategoryController@index');
+        Route::get('/show', 'App\Http\Controllers\CategoryController@showCTG');
+        Route::post('/destroy/{id}', 'App\Http\Controllers\CategoryController@destroy');
+        Route::get('/listCategory', 'App\Http\Controllers\CategoryController@showListCTG');
         Route::get('/select', 'App\Http\Controllers\CategoryController@getCategory');
         Route::post('/', 'App\Http\Controllers\CategoryController@store');
         Route::get('/tree', 'App\Http\Controllers\CategoryController@getCategoryTree');
@@ -43,8 +51,10 @@ Route::group(['middleware' => 'apiAuth'], function ($router) {
     Route::group(['prefix' => 'question'], function ($router) {
         Route::post('/', 'App\Http\Controllers\QuestionController@store');
         Route::post('/import', 'App\Http\Controllers\QuestionController@importExcel');
+        Route::post('/destroy/{id}', 'App\Http\Controllers\QuestionController@destroy');
         Route::get('/category/{catId}', 'App\Http\Controllers\QuestionController@getQuestionByCategory');
-        Route::get('/{questionId}', 'App\Http\Controllers\QuestionController@show');
+        Route::get('/detail/{questionId}', 'App\Http\Controllers\QuestionController@show');
+        Route::get('/show', 'App\Http\Controllers\QuestionController@showQS');
         Route::put('/{id}', 'App\Http\Controllers\QuestionController@update');
     });
 
@@ -53,4 +63,3 @@ Route::group(['middleware' => 'apiAuth'], function ($router) {
         Route::post('/finish', 'App\Http\Controllers\TestController@finishTest');
     });
 });
-

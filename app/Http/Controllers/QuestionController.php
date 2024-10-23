@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Answer;
+use App\Models\Results;
 use Illuminate\Http\Request;
 use App\Models\Question;
+use App\Models\Answer;
 use App\Traits\ResponseTrait;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Importer;
 
 class QuestionController extends Controller
@@ -48,7 +52,7 @@ class QuestionController extends Controller
                 ]);
                 DB::commit();
             }
-            
+
             DB::commit();
             return $this->respondSuccess(['message' => 'Create question success']);
         } catch (\Throwable $th) {
@@ -67,12 +71,27 @@ class QuestionController extends Controller
     public function show($questionId)
     {
         $question = Question::with(['answer' => function ($query) {
-                            $query->select('id', 'name', 'question_id', 'key', 'correct');
-                        }])
-                        ->where('id', $questionId)
-                        ->get();
+            $query->select('id', 'name', 'question_id', 'key', 'correct');
+        }])
+            ->where('id', $questionId)
+            ->get();
         return $this->respondSuccess($question);
     }
+    public function showQS(Request $request)
+    {
+
+        $question = Question::with([
+            'answer' => function ($query) {
+                $query->select('id', 'name', 'question_id', 'key', 'correct');
+            },
+            'category' => function ($query) {
+                $query->select('id', 'name');
+            }
+        ])->get();
+        return $this->respondSuccess($question);
+    }
+
+
 
     /**
      * Update the specified resource in storage.
@@ -119,9 +138,53 @@ class QuestionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $question = Question::find($id);
+            if ($question) {
+                DB::table('answers')->where('question_id', $question->id)->delete();
+
+                $question->delete();
+                DB::commit();
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'message' => 'Đã Xóa Question Thành Công'
+                    ],
+                    'res' => [
+                        'status' => '200'
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'data' => [
+                        'code' => 404,
+                        'message' => 'Question Không Tồn Tại!'
+                    ],
+                    'res' => [
+                        'status' => '404'
+                    ]
+                ]);
+            }
+        } catch (\Throwable $th) {
+
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'data' => [
+                    'code' => 500,
+                    'message' => 'Có lỗi xảy ra khi xóa Question!'
+                ],
+                'res' => [
+                    'status' => '500',
+                    'error' => $th->getMessage()
+                ]
+            ]);
+        }
     }
 
     /**
@@ -179,7 +242,7 @@ class QuestionController extends Controller
 
                         $indexAnswer = 4;
                         $indexCorrect = 8;
-                        for ($i=0; $i < 4; $i++) { 
+                        for ($i = 0; $i < 4; $i++) {
                             Answer::create([
                                 'name' => $row[$indexAnswer],
                                 'key' => $collection[0][$indexAnswer],
@@ -202,14 +265,15 @@ class QuestionController extends Controller
         }
     }
 
-    public function getQuestionByCategory($catId) {
+    public function getQuestionByCategory($catId)
+    {
         $questions = Question::inRandomOrder()
-                        ->with(['answer' => function ($query) {
-                            $query->select('id', 'name', 'question_id');
-                        }])
-                        ->where('category_id', $catId)
-                        ->limit(20)
-                        ->get();
+            ->with(['answer' => function ($query) {
+                $query->select('id', 'name', 'question_id');
+            }])
+            ->where('category_id', $catId)
+            ->limit(20)
+            ->get();
         return $this->respondSuccess($questions);
     }
 }
