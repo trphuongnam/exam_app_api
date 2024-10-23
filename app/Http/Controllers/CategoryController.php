@@ -57,7 +57,7 @@ class CategoryController extends Controller
             $description = $request->description;
             $start_time = $request->start_time;
             $end_time = $request->end_time;
-            
+
             $category = new Category();
             $category->name = $name;
             $category->description = $description;
@@ -67,7 +67,8 @@ class CategoryController extends Controller
             return $this->respondSuccess(['message' => 'Save category success']);
         } catch (\Throwable $th) {
             // throw $th;
-            return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
+            // return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
+            return $this->respondError(500, $th, ['status' => '500']);
         }
     }
 
@@ -85,7 +86,7 @@ class CategoryController extends Controller
             array_push($result, [
                 'id' => $value['id'],
                 'title' => $value['name'],
-                'key' => 'question_'.$value['id'],
+                'key' => 'question_' . $value['id'],
                 'isLeaf' => true,
             ]);
         }
@@ -102,10 +103,10 @@ class CategoryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-   
 
 
-     
+
+
     public function show($categoryId)
     {
         $category = Category::where('id', $categoryId)->get();
@@ -142,7 +143,6 @@ class CategoryController extends Controller
             throw $th;
             return $this->respondError(500, 'Internal Server Error', ['status' => '500']);
         }
-        
     }
 
     /**
@@ -151,9 +151,52 @@ class CategoryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $category = Category::find($id);
+            if ($category) {
+                DB::table('results')->where('user_id', $category->id)->delete();
+                $category->delete();
+                DB::commit();
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'message' => 'Đã Xóa Category Thành Công'
+                    ],
+                    'res' => [
+                        'status' => '200'
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'data' => [
+                        'code' => 404,
+                        'message' => 'Category Không Tồn Tại!'
+                    ],
+                    'res' => [
+                        'status' => '404'
+                    ]
+                ]);
+            }
+        } catch (\Throwable $th) {
+
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'data' => [
+                    'code' => 500,
+                    'message' => 'Có lỗi xảy ra khi xóa Category!'
+                ],
+                'res' => [
+                    'status' => '500',
+                    'error' => $th->getMessage()
+                ]
+            ]);
+        }
     }
 
     /**
@@ -177,12 +220,12 @@ class CategoryController extends Controller
         try {
             $categories = Category::select('id', 'name')->get()->toArray();
             $result = [];
-            
+
             foreach ($categories as $key => $value) {
                 $item = [
                     'id' => $value['id'],
                     'title' => $value['name'],
-                    'key' => "category_".$value['id'],
+                    'key' => "category_" . $value['id'],
                     'isLeaf' => false,
                     'children' => [],
                 ];

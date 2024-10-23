@@ -20,7 +20,7 @@ Route::post('signup', 'App\Http\Controllers\AuthController@signup');
 Route::group(['middleware' => 'apiAuth'], function ($router) {
     Route::get('auth/me', 'App\Http\Controllers\AuthController@getProfile');
     Route::post('logout', 'App\Http\Controllers\AuthController@logout');
-    
+
     // User route
     Route::group(['prefix' => 'user'], function ($router) {
         Route::get('/', 'App\Http\Controllers\UserController@index');
@@ -37,6 +37,8 @@ Route::group(['middleware' => 'apiAuth'], function ($router) {
     Route::group(['prefix' => 'category'], function ($router) {
         Route::get('/', 'App\Http\Controllers\CategoryController@index');
         Route::get('/show', 'App\Http\Controllers\CategoryController@showCTG');
+        Route::post('/destroy/{id}', 'App\Http\Controllers\CategoryController@destroy');
+        Route::get('/listCategory', 'App\Http\Controllers\CategoryController@showListCTG');
         Route::get('/select', 'App\Http\Controllers\CategoryController@getCategory');
         Route::post('/', 'App\Http\Controllers\CategoryController@store');
         Route::get('/tree', 'App\Http\Controllers\CategoryController@getCategoryTree');
@@ -49,6 +51,7 @@ Route::group(['middleware' => 'apiAuth'], function ($router) {
     Route::group(['prefix' => 'question'], function ($router) {
         Route::post('/', 'App\Http\Controllers\QuestionController@store');
         Route::post('/import', 'App\Http\Controllers\QuestionController@importExcel');
+        Route::post('/destroy/{id}', 'App\Http\Controllers\QuestionController@destroy');
         Route::get('/category/{catId}', 'App\Http\Controllers\QuestionController@getQuestionByCategory');
         Route::get('/detail/{questionId}', 'App\Http\Controllers\QuestionController@show');
         Route::get('/show', 'App\Http\Controllers\QuestionController@showQS');
@@ -60,4 +63,3 @@ Route::group(['middleware' => 'apiAuth'], function ($router) {
         Route::post('/finish', 'App\Http\Controllers\TestController@finishTest');
     });
 });
-
