@@ -29,7 +29,7 @@ const HistoryTest = ({
   useEffect(() => {
     if (tabKey == tabKeys.history) {
       if (!authenticationRouter(cookies) && isLogin) {
-        router.push('/login');
+        router.push('/auth');
       } else {
         getHistories(page);
       }

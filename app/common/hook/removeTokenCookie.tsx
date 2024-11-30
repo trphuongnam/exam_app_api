@@ -12,7 +12,7 @@ const RemoveTokenCookieHook = () => {
   useEffect(() => {
     cookie.remove('token');
     dispatch(loginAction(false));
-    router.push('/login');
+    router.push('/auth');
   }, [])
 }
 

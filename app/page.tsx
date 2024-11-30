@@ -16,7 +16,7 @@ const Home = () => {
 
   const handleClick = () => {
     if (!authenticationRouter(cookies) && isLogin) {
-      router.push('/login')
+      router.push('/auth')
     } else {
       router.push('/top')
     }

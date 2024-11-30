@@ -3,4 +3,12 @@
   font-size: 20px;
   border: none;
   font-family: $poppins;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  .ant-menu-item {
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
 }

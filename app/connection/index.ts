@@ -6,9 +6,9 @@ const quizUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export const axiosRequest = axios.create({
   baseURL: apiUrl,
-  // headers: {
-  //   Authorization: getTokenFromCookie() //the token is a variable which holds the token
-  // }
+  headers: {
+    Authorization: getTokenFromCookie() //the token is a variable which holds the token
+  }
 });
 
-// axiosRequest.defaults.headers.common['X-Api-Key'] = process.env.AUTH_TOKEN;
+axiosRequest.defaults.headers.common['X-Api-Key'] = process.env.AUTH_TOKEN;

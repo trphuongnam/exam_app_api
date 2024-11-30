@@ -5,7 +5,7 @@ import { authenticationRouter } from './app/common/util/functions/authentication
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
   if (!authenticationRouter(request.cookies)) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(new URL('/auth', request.url));
   }
 }
  

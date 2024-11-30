@@ -40,7 +40,7 @@ const Exam = () => {
 
   useEffect(() => {
     if (!authenticationRouter(cookies) && isLogin) {
-      router.push('/login');
+      router.push('/auth');
     } else {
       setSteps([]);
       setSelecting([]);
