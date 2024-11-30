@@ -18,7 +18,7 @@ const Login = () => {
     if (token && isLogin) {
       router.push('/top');
     } else {
-      router.push('/login');
+      router.push('/auth');
     }
   }, [token, isLogin])
 
@@ -26,34 +26,30 @@ const Login = () => {
     switch (visibleForm) {
       case formType.SIGNUP:
         return (
-          <SignupForm/>
+          <SignupForm onChangeForm={() => {setVisibleForm(formType.SIGNIN) }}/>
         );
       default:
         return (
-          <SigninForm/>
+          <SigninForm onChangeForm={() => {setVisibleForm(formType.SIGNUP) }}/>
         );
     }
   }
   return (
     <Row>
-      <Col xs={24} sm={24} md={12}>
-        <Image
-          preview={false}
-          src={`/asset/images/logo.png`}
-          className="login-logo"
-        />
-        <div>
-          <p className="text-center text-1">Welcome  back! <br/> Please login/Signup to your account.</p>
+      <Col xs={24} sm={24} md={10}>
+        <div className="flex items-center flex-col mb-8">
+          <Image
+            preview={false}
+            src={`/asset/images/logo.png`}
+            className="login-logo"
+          />
+          <div>
+            <p className="text-center text-1">Welcome  back! <br/> Please login/Signup to your account.</p>
+          </div>
         </div>
         <AuthForm/>
-        
-        <ButtonCustom
-          text={visibleForm == formType.SIGNIN ? 'Register now' : 'Login now'}
-          type="link"
-          evClick={() => {setVisibleForm(visibleForm == formType.SIGNIN ? formType.SIGNUP : formType.SIGNIN) }}
-        />
       </Col>
-      <Col xs={24} sm={24} md={12}>
+      <Col xs={24} sm={24} md={14} className="banner_login">
         <Image
           preview={false}
           src={`/asset/images/banner_login.png`}

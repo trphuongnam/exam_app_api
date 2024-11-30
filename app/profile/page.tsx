@@ -49,7 +49,7 @@ const Top = () => {
   
   useEffect(() => {
     if (!authenticationRouter(cookies) && isLogin) {
-      router.push('/login');
+      router.push('/auth');
     } else {
       dispatch(getUserService());
     }
@@ -80,7 +80,7 @@ const Top = () => {
   }
 
   const buttonAction = () => {
-    if (userData.length > 0 && userData.role == memberRole.admin) {
+    if (userData.length > 0 && userData[0].role == memberRole.admin) {
       return (
         <div className="profile-buttons">
           <ButtonCustom

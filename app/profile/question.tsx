@@ -28,7 +28,7 @@ const ListQuestion = ({
     if (tabKey == tabKeys.question) {
       setNodeSelected({});
       if (!authenticationRouter(cookies) && isLogin) {
-        router.push('/login');
+        router.push('/auth');
       } else {
         setLoading(true);
         getCategories();

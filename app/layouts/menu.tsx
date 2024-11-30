@@ -41,7 +41,7 @@ const MenuLayout = () => {
   const handleLogout = () => {
     cookies.remove('token');
     dispatch(loginAction(false));
-    router.push('/login');
+    router.push('/auth');
   }
 
   const onClickProfile = () => {

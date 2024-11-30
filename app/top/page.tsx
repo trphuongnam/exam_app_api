@@ -24,7 +24,7 @@ const Top = () => {
 
   useEffect(() => {
     if (!authenticationRouter(cookies) && isLogin) {
-      router.push('/login');
+      router.push('/auth');
     } else {
       if (categories.length < 1) {
         getCategories();
