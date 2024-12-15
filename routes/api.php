@@ -15,7 +15,10 @@ use App\Http\Controllers\AuthController;
 |
 */
 
-Route::post('login', 'App\Http\Controllers\AuthController@login');
+Route::group(['prefix' => 'login'], function ($router) {
+    Route::post('/', 'App\Http\Controllers\AuthController@login');
+    Route::post('/google', 'App\Http\Controllers\AuthController@loginGoogle');
+});
 Route::post('signup', 'App\Http\Controllers\AuthController@signup');
 Route::group(['middleware' => 'apiAuth'], function ($router) {
     Route::post('logout', 'App\Http\Controllers\AuthController@logout');

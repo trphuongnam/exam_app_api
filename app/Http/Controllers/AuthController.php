@@ -9,6 +9,7 @@ use App\Traits\ResponseTrait;
 use App\Http\Requests\SignupRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -27,6 +28,9 @@ class AuthController extends Controller
 
             if ($user) {
                 $jsonToken = $this->createAccessToken();
+                if (!$jsonToken) {
+                    return $this->respondError(500, 'Error when login');
+                }
                 return $this->respondSuccess([
                     'success' => true,
                     'access_token' => $jsonToken,
@@ -39,8 +43,37 @@ class AuthController extends Controller
         } catch (\Throwable $th) {
             // throw $th;
             return $this->respondError(500, $th, ['status' => 500]);
+        }  
+    }
+
+    public function loginGoogle(Request $request) {
+        try {
+            $user_data = User::where('email', $request->email)->first();
+            $password = $user_data->password;
+            if (!$user_data) {
+                $password = Str::random(10);
+
+                $user = new User();
+                $user->name = $request->name;
+                $user->email = $request->email;
+                $user->password = Hash::make($password);
+                $user->role = 2;
+                $user->save();
+            }
+            $jsonToken = $this->createAccessToken($request->email, 'password');
+            if (!$jsonToken) {
+                return $this->respondError(500, 'Error when login Token');
+            }
+            return $this->respondSuccess([
+                'success' => true,
+                'access_token' => $jsonToken,
+                'message' => 'Login success',
+                'status' => 200
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+            return $this->respondError(500, 'Error when login');
         }
-        
     }
 
     public function logout() {
@@ -49,16 +82,6 @@ class AuthController extends Controller
             'success' => true,
             'msg' => '' 
         ]);
-    }
-
-    private function createAccessToken() {
-        $credentials = request(['email', 'password']);
-        $token = auth()->attempt($credentials);
-
-        if (!$token) {
-            return false;
-        }
-        return $token;
     }
 
     public function signup(SignupRequest $signup) {
@@ -76,6 +99,26 @@ class AuthController extends Controller
         } catch (\Throwable $th) {
             throw $th;
             return $this->respondError(500, 'Error when create user');
+        }
+    }
+
+    private function createAccessToken($email = '', $password = '') {
+        try {
+            if ($email == '' && $password == '') {
+                $credentials = request(['email', 'password']);
+            } else {
+                $credentials = ['email' => $email, 'password' => $password];
+            }
+    
+            $token = auth()->attempt($credentials);
+            
+            if (!$token) {
+                return false;
+            }
+            return $token;
+        } catch (\Throwable $th) {
+            throw $th;
+            return false;
         }
     }
 }

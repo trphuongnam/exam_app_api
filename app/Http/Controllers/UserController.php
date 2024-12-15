@@ -20,7 +20,12 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
-            $users = User::where('id', auth()->payload()->get('sub'))->get();
+            if ($request->loginType !== 'google') {
+                $users = User::where('id', auth()->payload()->get('sub'))->get();
+            } else {
+                $users = User::where('email', $request->email)->get();
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $users
