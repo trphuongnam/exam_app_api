@@ -31,9 +31,16 @@ class AuthController extends Controller
                 if (!$jsonToken) {
                     return $this->respondError(500, 'Error when login');
                 }
+                $userRole = $user->role;
+                $results = [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'role' => $userRole
+                ];
                 return $this->respondSuccess([
                     'success' => true,
                     'access_token' => $jsonToken,
+                    'login_data' => $results,
                     'message' => 'Login success',
                     'status' => 200
                 ]);
@@ -49,24 +56,35 @@ class AuthController extends Controller
     public function loginGoogle(Request $request) {
         try {
             $user_data = User::where('email', $request->email)->first();
-            $password = $user_data->password;
-            if (!$user_data) {
-                $password = Str::random(10);
+            $emailName = explode('@', $request->email)[0];
+            $password = Hash::make($emailName.env('JWT_SECRET'));
+            $userRole = 2;
 
+            if (!$user_data) {
                 $user = new User();
                 $user->name = $request->name;
                 $user->email = $request->email;
-                $user->password = Hash::make($password);
-                $user->role = 2;
+                $user->password = $password;
+                $user->role = $userRole;
                 $user->save();
+            } else {
+                $password = $emailName.env('JWT_SECRET');
+                $userRole = $user_data->role;
             }
-            $jsonToken = $this->createAccessToken($request->email, 'password');
+            $jsonToken = $this->createAccessToken($request->email, $password);
             if (!$jsonToken) {
-                return $this->respondError(500, 'Error when login Token');
+                return $this->respondError(500, 'Can\'t generating token');
             }
+
+            $results = [
+                'name' => $request->name,
+                'email' => $request->email,
+                'role' => $userRole
+            ];
             return $this->respondSuccess([
                 'success' => true,
                 'access_token' => $jsonToken,
+                'login_data' => $results,
                 'message' => 'Login success',
                 'status' => 200
             ]);

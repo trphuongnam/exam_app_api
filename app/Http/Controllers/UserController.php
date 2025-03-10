@@ -179,4 +179,29 @@ class UserController extends Controller
             return $this->respondError(500, 'Download Fail');
         }
     }
+
+    public function getMember(Request $request) {
+        $current_page = $request->page ? $request->page : 1;
+        $per_page = $request->row ? $request->row : 10;
+        $query = User::query();
+        if ($request->text) {
+            $query->where('email', 'LIKE', '%'.$request->text.'%');
+            $query->where('name', 'LIKE', '%'.$request->text.'%');
+        }
+
+        if ($request->role && $request->role != 3) {
+            $query->where('role', $request->role);
+        }
+
+        $results = $query->paginate($per_page);
+
+        $total_page = ceil($results->total() / $per_page);
+        return response()->json([
+            'results' => $results,
+            'current_page' => $current_page,
+            'total_page' => $total_page,
+            'per_page' => $results->perPage(),
+            'total' => $results->total()
+        ]);
+    }
 }
