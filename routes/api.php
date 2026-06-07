@@ -29,6 +29,7 @@ Route::group(['middleware' => 'apiAuth'], function ($router) {
         Route::get('/history', 'App\Http\Controllers\UserController@getTestHistory');
         Route::get('/allhistory', 'App\Http\Controllers\UserController@getAllTestHistory');
         Route::get('/certificate', 'App\Http\Controllers\UserController@exportCertificate');
+        Route::get('/member', 'App\Http\Controllers\UserController@getMember');
     });
 
     // Category route
